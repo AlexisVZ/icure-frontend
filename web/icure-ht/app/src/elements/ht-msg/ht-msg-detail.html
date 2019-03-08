@@ -806,6 +806,19 @@
                 justify-content: flex-start;
                 width: 100%;
             }
+            #import-suggest .search-label {
+                margin: 8px;
+                padding-top: 12px;
+            }
+            #import-suggest .search-label.auto-search-label {
+                margin-left: 0;
+            }
+            #import-suggest .grow {
+                flex-grow: 1;
+            }
+            #import-suggest .grow-2 {
+                flex-grow: 2;
+            }
             #import-suggest .line > div.icon {
                 display: flex;
                 flex-direction: column;
@@ -857,13 +870,28 @@
 
             paper-button.search-patients{
                 background: var(--app-background-color-darker);
-                margin: 4px;
+                margin: 8px 4px;
+                flex-grow: 1;
+            }
+            paper-button.search-patients.manual {
+                margin-right: 0;
             }
             paper-input.search-patients {
                 flex-grow: 1;
             }
-            iron-icon.search-patients {
-                padding-top: 16px;
+            iron-icon.search-patients.close {
+                background: var(--app-background-color-darker);
+                height: 52px;
+                width: 52px;
+                padding: 16px;
+                box-sizing: border-box;
+                margin: 8px;
+                border-radius: 50%;
+                cursor: pointer;
+            }
+            .occur-found {
+                padding-top: 12px;
+                margin-right: 8px;
             }
 
             .wide-only {
@@ -1040,18 +1068,27 @@
                                 </div>
                             </div>
                             <div class="pat-box">
-                                <h5>[[patsLng]] [[localize('found_matches','Found matches',language)]] [[selectName]]</h5>
-                                <div class="scrollbox patlist">
+                                <h5>[[localize('sch_pats','Search patients',language)]]</h5>
+                                <div class="line">
                                     <template is="dom-if" if="[[!manualAssign]]">
-                                        <paper-button class="search-patients" on-tap="toggleManualAssign"><iron-icon icon="perm-identity"></iron-icon> [[localize('sch_pats','Search patients',language)]]</paper-button>
-                                    </template>
-                                    <template is="dom-if" if="[[manualAssign]]">
-                                        <div>
-                                            <div class="line">
-                                                <paper-input class="search-patients" value="{{searchPatValue}}" label="[[localize('pati','Patient',language)]]"></paper-input><iron-icon class="search-patients"  icon="close" on-tap="toggleManualAssign"></iron-icon>
-                                            </div>
+                                        <div id="auto-search" class="line grow grow-2">
+                                            <div class="search-label auto-search-label">[[localize('auto','Auto',language)]]&nbsp;:</div>
+                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="low">[[localize('accur_low','Low accuracy',language)]]</paper-button>
+                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="middle">[[localize('accur_mid','Middle accuracy',language)]]</paper-button>
+                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="middle">[[localize('accur_hih','High accuracy',language)]]</paper-button>
                                         </div>
                                     </template>
+                                    <div class="line grow">
+                                        <template is="dom-if" if="[[!manualAssign]]">
+                                            <div class="search-label">[[localize('or','Or',language)]]</div>
+                                            <paper-button class="search-patients manual" on-tap="toggleManualAssign" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
+                                        </template>
+                                        <template is="dom-if" if="[[manualAssign]]">
+                                            <paper-input class="search-patients" value="{{searchPatValue}}" label="[[localize('pati','Patient',language)]]"></paper-input><iron-icon class="search-patients close"  icon="close" on-tap="toggleManualAssign"></iron-icon>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="scrollbox patlist">
                                     <template is="dom-repeat" items="[[toImportPatsSuggestions]]">
                                         <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
                                     </template>
@@ -1065,6 +1102,7 @@
                         </div>
                         </template>
                         <div class="line save-line">
+                            <div class="occur-found">[[patsLng]] [[localize('found_matches','Found matches',language)]] [[selectName]]</div>
                             <paper-button class="modal-button--cancel" on-tap="closeSuggestions">
                                 [[localize('can','Cancel',language)]]
                             </paper-button>
@@ -1235,13 +1273,17 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             documentBeingAssigned: {
 			    type: Object,
                 value: null
+            },
+            filterAccuracy: {
+			    type: String,
+                value: null
             }
 		};
 	}
 
 	static get observers() {
 		return ['_focusChanged(selectedMessage)','_hasLabResult(selectedMessage)','_updateSuggestions(selectedProtocol)',
-            '_updatePatSearch(searchPatValue)','_patsLngChanged(toImportPatsSuggestions,toImportPatsSearch)',
+            '_updatePatSearch(searchPatValue)','_patsLngChanged(toImportPatsSuggestions)',
             '_isConnectedToEhbox(api.tokenId)','_isSentbox(selectedMessage)'];
 	}
 
@@ -1290,11 +1332,16 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	    if (!this.isLoadingPatsSuggest) {
             this.set('searchPatValue','')
             this.set('manualAssign',!this.manualAssign)
-            if(!this.manualAssign) this.set('toImportPatsSearch',[])
+            this.set('filterAccuracy',null)
+            if(!this.manualAssign) {
+                this._updateSuggFromAccuracy()
+                this.set('toImportPatsSearch',[])
+            }
         }
     }
     _updatePatSearch() {
         this.set('canAssign',false)
+        this.set('filterAccuracy',null)
 	    if (this.searchPatValue.length >= 2) {
             this.set('isLoadingPatsSuggest',true)
             console.log('updatePatSearch',this.searchPatValue)
@@ -1311,6 +1358,44 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             this.set('isLoadingPatsSuggest',false)
         }
     }
+
+    _updateSuggFromAccuracy(e) {
+	    const filterAccuracy = e && e.target && e.target.getAttribute('accuracy') || 'low'
+        this.set('isLoadingPatsSuggest',true)
+        this.set('manualAssign',false)
+        this.set('toImportPatsSearch',[])
+        const searchString = this.resInfoBeingAssigned && (this.resInfoBeingAssigned.lastName+" "+this.resInfoBeingAssigned.firstName+" "+this.resInfoBeingAssigned.formatedBirthDate+" "+this.resInfoBeingAssigned.dateOfBirth+" "+(this.resInfoBeingAssigned.ssin ? this.resInfoBeingAssigned.ssin : '')).toUpperCase() || ''
+	    const splittedSearch = searchString.split(' ')
+        let patsToDisplay = []
+        Promise.all(
+            splittedSearch.map(str=>{
+                return this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, str, null, null, 100, "asc").then(all=>{
+                    all.rows.map(p=>{
+                        console.log('arr',patsToDisplay)
+                        console.log('p',p)
+                        if (!patsToDisplay.includes(p)) patsToDisplay.push(p)
+                    }) // rows end
+
+                    if (filterAccuracy == 'middle') {
+                        patsToDisplay.map(p=>{
+                            if (!searchString.includes(p.dateOfBirth)) patsToDisplay.splice(p)
+                        })
+                    }
+                    if (filterAccuracy == 'high') {
+                        if (this.resInfoBeingAssigned.ssin) {
+                            patsToDisplay.map(p=>{
+                                if (!searchString.includes(p.ssin)) patsToDisplay.splice(p)
+                            })
+                        }
+                    }
+                })
+            }) // map end
+        ).then(()=>{
+            this.set('toImportPatsSearch',patsToDisplay)
+            this.set('isLoadingPatsSuggest',false)
+        })
+    }
+
     _patsLngChanged() {
 	    this.set('patsLng',this.toImportPatsSuggestions.length + this.toImportPatsSearch.length)
     }
@@ -1411,6 +1496,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             this.set('toImportPatsSearch',[])
             this.set('isLoadingPatsSuggest',false)
             this.set('selectedProtocol',0)
+            this._updateSuggFromAccuracy()
         }
     }
 

@@ -1418,7 +1418,8 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 } else return
             }) // splittedSearch map end
         ).then(()=>{
-            this.set('toImportPatsSearch',[...new Set(patsToDisplay)])
+            console.log('toImportPatsSearch',patsToDisplay)
+            this.set('toImportPatsSearch',patsToDisplay)
             this.set('isLoadingPatsSuggest',false)
         })
     }

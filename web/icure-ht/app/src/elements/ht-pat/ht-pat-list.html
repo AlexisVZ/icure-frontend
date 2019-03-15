@@ -2921,6 +2921,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             _cancelSelecting() {
                 this._deselectAllSelectedPatients()
+                this.set('taskProgress',0)
                 this.set('shareOption', false)
                 this.set('exportOption', false)
                 this.set('fusionOption', false)

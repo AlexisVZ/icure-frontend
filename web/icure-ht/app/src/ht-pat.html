@@ -140,7 +140,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }, 0);
                 }
             } else if (this.selectedPatient.id !== this.routeData.selectedPatientId) {
-                this.set('isLoadingPat',true)
                 this.set('routeData.selectedPatientId', this.selectedPatient.id);
             } else if(this.selectedPatient.id === this.routeData.selectedPatientId){
                 if(this.socket && this.route.prefix==="/pat"){

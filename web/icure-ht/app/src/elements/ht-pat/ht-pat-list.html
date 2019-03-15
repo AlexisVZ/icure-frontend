@@ -178,11 +178,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     text-overflow: ellipsis;
                 }
 
-                .progress-bar {
+                .progress-bar.not-mobile {
                     width: 20%;
-                    right: 312px;
-                    position: absolute;
-                    bottom: 20px;
+                }
+                .progress-bar.mobile {
+                    display: none;
                 }
 
                 .add-btn-mobileonly {
@@ -333,7 +333,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     background: var(--app-background-color);
                     top: 64px;
                     left: 20%;
-                    @apply --shadow-elevation-2dp;
+                    /*@apply --shadow-elevation-2dp;*/
                     margin: 0;
                     grid-column: 2 / 4;
                     grid-row: 1 / 1;
@@ -627,8 +627,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
 
                 @media screen and (max-width: 1120px) {
+                    .second-filter-panel {
+                        height: calc(100vh - 108px);
+                        box-shadow: none;
+                    }
+
                     div.container {
                         display: inherit;
+                    }
+
+                    .progress-bar.mobile {
+                        display: initial;
+                        position: fixed;
+                        bottom: 48px;
+                        right: 80px;
+                        width: 20%;
                     }
 
                     .add-btn-container {
@@ -656,13 +669,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     .add-btn-mobile {
                         display: block;
                         position: fixed;
-                        bottom: 4px;
+                        bottom: 44px;
                         right: 36px;
                     }
 
                     .add-list-mobile {
                         position: fixed;
-                        bottom: 48px;
+                        bottom: 88px;
                         right: 40px;
 
                         background: var(--app-background-color-light);
@@ -1041,7 +1054,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </template>
 
 
-                    <vaadin-grid-column flex-grow="0" width="5%">
+                    <vaadin-grid-column flex-grow="0" width="56px">
                         <template class="header">
                             <div class="cell frozen">[[localize('pic','Picture',language)]]</div>
                         </template>
@@ -1111,6 +1124,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     </vaadin-grid-column>
                 </vaadin-grid>
 
+                <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*)]]">
+                    <template is="dom-if" if="[[taskProgress]]">
+                        <vaadin-progress-bar class="progress-bar mobile" value="[[taskProgress]]"></vaadin-progress-bar>
+                    </template>
+                </template>
                 <div class="add-btn-mobile">
                     <paper-fab mini icon="more-vert" id="add-btn-mobile-btn" class="toggle-btn" on-tap="toggleMobileMenu"></paper-fab>
                     <paper-tooltip position="left" for="add-btn-mobile-btn">[[localize('more','More',language)]]</paper-tooltip>
@@ -1133,9 +1151,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*)]]">
                             <div class="add-elem-mobile" on-tap="_cancelSelecting">[[localize('canc','Cancel',language)]]</div>
                             <div class="add-elem-mobile" on-tap="_openPatientActionDialog">[[localize('sel','Select',language)]]</iron-icon></div>
-                            <template is="dom-if" if="[[taskProgress]]">
-                                <vaadin-progress-bar class="progress-bar" value="[[taskProgress]]"></vaadin-progress-bar>
-                            </template>
                         </template>
                     </div>
                 </div>
@@ -1165,14 +1180,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             </paper-button>
                         </template>
                         <template is="dom-if" if="[[_optionsChecked(shareOption.*,exportOption.*,fusionOption.*)]]">
+                            <template is="dom-if" if="[[taskProgress]]">
+                                <vaadin-progress-bar class="progress-bar not-mobile" value="[[taskProgress]]"></vaadin-progress-bar>
+                            </template>
                             <paper-button class="cancel-btn" on-tap="_cancelSelecting">[[localize('canc','Cancel',language)]]</paper-button>
                             <paper-button class="add-btn" on-tap="_openPatientActionDialog">
                                 <iron-icon icon="icons:check" on-tap="_openPatientActionDialog"></iron-icon>
                                 [[localize('sel','Select',language)]]
                             </paper-button>
-                            <template is="dom-if" if="[[taskProgress]]">
-                                <vaadin-progress-bar class="progress-bar" value="[[taskProgress]]"></vaadin-progress-bar>
-                            </template>
                         </template>
                     </div>
                 </div>

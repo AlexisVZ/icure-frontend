@@ -342,6 +342,52 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 width: 100%;
             }
 
+            .card{
+                box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
+                margin-bottom: 24px;
+            }
+
+            .card .header{
+                display: flex;
+                flex-flow: row wrap;
+                justify-content: flex-start;
+                align-items: center;
+                background: #fff;
+                padding: 16px;
+                width: 100%;
+                box-sizing: border-box;
+                margin: 0;
+                height: 56px;
+                font-size: 16px;
+                font-weight: 700;
+                text-align: left;
+                color: var(--app-text-color);
+            }
+
+            .card .content{
+                padding: 16px;
+                background: var(--app-background-color);
+            }
+
+            .card .content paper-checkbox{
+                --paper-checkbox-checked-color: var(--app-secondary-color);
+                --paper-checkbox-unchecked-ink-color: var(--app-secondary-color-dark);
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .card .content paper-input{
+                --paper-input-container-focus-color: var(--app-primary-color-dark);
+            }
+
+            .card.dossier, .card.ehbox, .card.hubs{
+                width:50%;
+            }
+
+            .card.facturation{
+                width: 100%;
+            }
+
         </style>
 
         <div class="users-panel">

@@ -55,7 +55,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .facturation-flat-rate-panel{
-                height: 100%;
+                display: flex;
+                flex-direction: column;
+                height: calc(100vh - 108px); /* 108 = 64header + 20log + 24margin */
                 width: 100%;
                 padding: 0 20px;
                 box-sizing: border-box;
@@ -65,6 +67,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             #addedFlatRateTarificationDialog{
                 height: 280px;
                 width: 600px;
+            }
+
+            #flatRateFacturation {
+                min-height: 0 !important;
+                flex-grow: 1;
             }
 
             .top-gradient{
@@ -122,6 +129,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 height: 24px;
                 width: 24px; 
                 padding: 4px;
+            }
+
+            @media screen and (max-width: 1024px) {
+                .facturation-flat-rate-panel {
+                    width: 100vw;
+                }
             }
 
         </style>

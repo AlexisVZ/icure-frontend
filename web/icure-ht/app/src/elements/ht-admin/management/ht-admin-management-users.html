@@ -56,7 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .users-panel{
-                height: 100%;
+                height: calc(100vh - 108px); /* 108 = 64header + 20log + 24margin */
                 width: 100%;
                 padding: 0 20px;
                 box-sizing: border-box;
@@ -169,6 +169,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             .input{
                 margin: 1%;
+            }
+
+            @media screen and (max-width: 1024px) {
+                .users-panel {
+                    width: 100vw;
+                }
             }
 
 

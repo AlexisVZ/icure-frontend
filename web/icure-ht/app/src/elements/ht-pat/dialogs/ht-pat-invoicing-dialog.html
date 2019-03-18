@@ -137,7 +137,7 @@
             }
 
             .invoice-detail {
-                min-height: 200px;
+                min-height: 80px;
                 height: auto;
                 width: auto;
                 overflow-y: auto;
@@ -148,8 +148,8 @@
 
             .buttons {
                 position: absolute;
-                bottom: 20px;
-                right: 22px;
+                bottom: 8px;
+                right: 4px;
             }
 
             .modal-button{
@@ -1550,7 +1550,7 @@
                                   value="{{bufferTypeCode}}"></vaadin-combo-box>
             </div>
             <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--cancel" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -1579,7 +1579,7 @@
                 </div>
             </div>
             <div class="buttons">
-                <paper-button on-tap="_closeEidDialog">[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--cancel" on-tap="_closeEidDialog">[[localize('can','Cancel',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -1611,8 +1611,8 @@
                 </div>
             </template>
             <div class="buttons">
-                <paper-button on-tap="_closeManualEncodingDialog">[[localize('can','Cancel',language)]]</paper-button>
-                <paper-button on-tap="_confirmManualEncodingDialog">[[localize('add','Add',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--cancel" on-tap="_closeManualEncodingDialog">[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--save" on-tap="_confirmManualEncodingDialog">[[localize('add','Add',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -1624,8 +1624,8 @@
                                   value="{{reason}}" class="manualEncodingContainerChild"></vaadin-combo-box>
             </div>
             <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
-                <paper-button dialog-confirm on-tap="_cancelEattest">[[localize('validate','Validate',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--cancel" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--save" dialog-confirm on-tap="_cancelEattest">[[localize('validate','Validate',language)]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -1638,11 +1638,13 @@
                                   value="{{selectedInvoice.paymentType}}" class="manualEncodingContainerChild"></vaadin-combo-box>
                 <paper-input class="paid" label="Montant encaissé"
                              allowed-pattern="[.\d]"
-                             value="{{selectedInvoice.paid}}" type="number" min="0" max="100000" step="0.01"></paper-input>
+                             value="{{selectedInvoice.paid}}" type="number" min="0" max="100000" step="0.01">
+                    <div slot="suffix">€</div>
+                </paper-input>
             </div>
             <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
-                <paper-button dialog-confirm on-tap="_confirmPayment">[[localize('validate','Validate',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--cancel" dialog-dismiss>[[localize('can','Cancel',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--save" dialog-confirm on-tap="_confirmPayment">[[localize('validate','Validate',language)]]</paper-button>
             </div>
         </paper-dialog>
     </template>
@@ -3038,7 +3040,9 @@
 
             _prevalidateAndPrepareInvoiceForBatchSending() {
                 if (this.selectedInvoice) {
-                    this.set('selectedInvoice.paid', Number(this.selectedInvoice.invoicingCodes.reduce((tot,c)=>tot + (Number(c.reimbursement) || 0) + (Number(c.patientIntervention) || 0) + (Number(c.doctorSupplement) || 0), 0).toFixed(2)))
+                    const paid = this.selectedInvoice.sentMediumType === "efact" ? Number(this.selectedInvoice.invoicingCodes.reduce((tot,c)=>tot+(Number(c.patientIntervention) || 0) + (Number(c.doctorSupplement) || 0), 0).toFixed(2))
+                        : Number(this.selectedInvoice.invoicingCodes.reduce((tot,c)=>tot + (Number(c.reimbursement) || 0) + (Number(c.patientIntervention) || 0) + (Number(c.doctorSupplement) || 0), 0).toFixed(2))
+                    this.set('selectedInvoice.paid', paid)
                     this.set('selectedInvoice.paymentType',"cash")
                 }
                 this.$['paymentCheckDialog'].open()

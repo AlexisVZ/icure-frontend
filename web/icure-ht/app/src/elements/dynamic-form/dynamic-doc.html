@@ -191,7 +191,9 @@
             .assignToPat:hover {
                 background: var(--app-secondary-color-dark);
             }
-            .assign-ico {
+            .assign-ico,
+            .download-ico,
+            .print-ico {
                 position: absolute;
                 right: 8px;
                 top: 4px;
@@ -202,6 +204,12 @@
                 box-sizing: border-box;
                 background: var(--app-secondary-color);
                 border-radius: 50%;
+            }
+            .download-ico {
+                right: 48px;
+            }
+            .print-ico {
+                right: 88px;
             }
 
             div.assignStatus {
@@ -222,6 +230,8 @@
             <paper-card class="pat-details-card">
                 <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
                     <template is="dom-if" if="[[!isPatDetail]]">
+                        <paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>
+                        <paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                         <paper-icon-button id="assign-ico-attach" class="assign-ico" icon="assignment-returned" on-tap="openSuggestions"  document$="[[item]]"></paper-icon-button>
                         <paper-tooltip for="assign-ico-attach" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                     </template>
@@ -321,6 +331,10 @@
             <template is="dom-repeat" items="[[labOrProtocolContent]]" as="resInfo">
             <paper-card class="pat-details-card">
                 <template is="dom-if" if="[[!isPatDetail]]">
+                    <!--<paper-icon-button id="print-ico-lab-[[resInfo.protocol]]" class="print-ico" icon="print" on-tap="_print" dataset-item$="[[resInfo]]"></paper-icon-button>-->
+                    <!--<paper-tooltip for="print-ico-lab-[[resInfo.protocol]]" position="left">[[localize('print','Print',language)]]</paper-tooltip>-->
+                    <!--<paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>-->
+                    <!--<paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>-->
                     <paper-icon-button id="assign-ico-lab-[[resInfo.protocol]]" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions" data-item$="[[resInfo]]"></paper-icon-button>
                     <paper-tooltip for="assign-ico-lab-[[resInfo.protocol]]" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                 </template>

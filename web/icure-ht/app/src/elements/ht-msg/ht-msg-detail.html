@@ -28,6 +28,7 @@
 <link rel="import" href="../../../bower_components/paper-input/paper-input-container.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dropdown-menu/paper-dropdown-menu">
 <link rel="import" href="../../../bower_components/paper-listbox/paper-listbox.html">
 
 <link rel="import" href="../../../bower_components/paper-tooltip/paper-tooltip.html">
@@ -881,6 +882,10 @@
             }
             paper-input.search-patients {
                 flex-grow: 1;
+                height: 80px;
+            }
+            .search-patients .suffix {
+                font-size: .7em;
             }
             iron-icon.search-patients.close {
                 background: var(--app-background-color-darker);
@@ -1085,35 +1090,41 @@
                             </div>
                             <div class="pat-box">
                                 <h5>[[localize('sch_pats','Search patients',language)]]</h5>
-                                <div class="line">
+                                <div class="line grow">
                                     <template is="dom-if" if="[[!searchNameInputOpened]]">
-                                        <div id="auto-search" class="line grow grow-2">
-                                            <div class="search-label auto-search-label">[[localize('auto','Auto',language)]]&nbsp;:</div>
-                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="low">[[localize('accur_low','Low accuracy',language)]]</paper-button>
-                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="mid">[[localize('accur_mid','Middle accuracy',language)]]</paper-button>
-                                            <paper-button class="auto search-patients" on-tap="_updateSuggFromAccuracy" accuracy="high">[[localize('accur_hih','High accuracy',language)]]</paper-button>
-                                        </div>
+                                        <paper-button class="search-patients manual" on-tap="togglesearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
                                     </template>
-                                    <div class="line grow">
-                                        <template is="dom-if" if="[[!searchNameInputOpened]]">
-                                            <div class="search-label">[[localize('or','Or',language)]]</div>
-                                            <paper-button class="search-patients manual" on-tap="togglesearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
-                                        </template>
-                                        <template is="dom-if" if="[[searchNameInputOpened]]">
-                                            <paper-input class="search-patients" value="{{searchPatValue}}" label="[[localize('pati','Patient',language)]]"></paper-input><iron-icon class="search-patients close"  icon="close" on-tap="togglesearchNameInputOpened"></iron-icon>
-                                        </template>
-                                    </div>
+                                    <template is="dom-if" if="[[searchNameInputOpened]]">
+                                        <!--<paper-dropdown-menu>-->
+                                            <!--<paper-listbox slot="dropdown-content" selected="{{smartSuggestionAccuracy}}">-->
+                                                <!--<paper-item id="0">[[localize('accur_low','Low accuracy',language)]]</paper-item>-->
+                                                <!--<paper-item id="1">[[localize('accur_mid','Middle accuracy',language)]]</paper-item>-->
+                                                <!--<paper-item id="2">[[localize('accur_hih','High accuracy',language)]]</paper-item>-->
+                                            <!--</paper-listbox>-->
+                                        <!--</paper-dropdown-menu>-->
+                                        <paper-input class="search-patients" value="{{searchPatInput}}" label="[[localize('pati','Patient',language)]]">
+                                            <!--<template is="dom-if" if="[[!searchPatInput.length]]">-->
+                                                <!--<div class="suffix" slot="suffix">-->
+                                                    <!--<span>Fast search</span>-->
+                                                    <!--<template is="dom-repeat" items="[[suggestPatSplittedInfos]]">-->
+                                                        <!--<paper-button class="tag">[[item]]</paper-button>-->
+                                                    <!--</template>-->
+                                                <!--</div>-->
+                                            <!--</template>-->
+                                        </paper-input>
+                                        <iron-icon class="search-patients close"  icon="close" on-tap="togglesearchNameInputOpened"></iron-icon>
+                                    </template>
                                 </div>
                                 <div class="scrollbox patlist">
                                     <template is="dom-repeat" items="[[toImportPatsSuggestions]]">
                                         <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
                                     </template>
-                                    <template is="dom-if" if="[[toImportPatsSearch.length]]">
-                                        <template is="dom-repeat" items="[[toImportPatsSearch]]">
+                                    <template is="dom-if" if="[[suggestedPatientsList.length]]">
+                                        <template is="dom-repeat" items="[[suggestedPatientsList]]">
                                             <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
                                         </template>
                                     </template>
-                                    <template is="dom-if" if="[[!toImportPatsSearch.length]]">
+                                    <template is="dom-if" if="[[!suggestedPatientsList.length]]">
                                         <template is="dom-if" if="[[!isLoadingPatsSuggest]]">
                                             <div class="no-pats">0 [[localize('found_matches','Found matches',language)]] !</div>
                                         </template>
@@ -1123,9 +1134,9 @@
                         </div>
                         </template>
                         <div class="line save-line">
-                            <template is="dom-if" if="[[toImportPatsSearch.length]]">
+                            <template is="dom-if" if="[[suggestedPatientsList.length]]">
                                 <template is="dom-if" if="[[!isLoadingPatsSuggest]]">
-                                    <div class="occur-found">[[toImportPatsSearch.length]] [[localize('found_matches','Found matches',language)]] [[selectName]]</div>
+                                    <div class="occur-found">[[suggestedPatientsList.length]] [[localize('found_matches','Found matches',language)]] [[selectName]]</div>
                                 </template>
                             </template>
                             <paper-button class="modal-button--cancel" on-tap="closeSuggestions">
@@ -1265,7 +1276,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 			    type: Boolean,
                 value: false
             },
-            searchPatValue: {
+            searchPatInput: {
 			    type: String,
                 value: ''
             },
@@ -1273,7 +1284,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 			    type: Boolean,
                 value: false
             },
-            toImportPatsSearch: {
+            suggestedPatientsList: {
 			    type: Array,
                 value: []
             },
@@ -1295,16 +1306,20 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 			    type: Object,
                 value: null
             },
-            filterAccuracy: {
-			    type: String,
-                value: null
+            smartSuggestionAccuracy: {
+			    type: Number,
+                value: 0
+            },
+            suggestPatSplittedInfos: {
+			    type: Array,
+                value: []
             }
 		};
 	}
 
 	static get observers() {
 		return ['_focusChanged(selectedMessage)','_hasLabResult(selectedMessage)','_updateSuggestions(selectedProtocol)',
-            '_updatePatSearch(searchPatValue)',
+            '_updatePatSearch(searchPatInput)',
             '_isConnectedToEhbox(api.tokenId)','_isSentbox(selectedMessage)'];
 	}
 
@@ -1351,77 +1366,131 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     togglesearchNameInputOpened() {
 	    if (!this.isLoadingPatsSuggest) {
-            this.set('searchPatValue','')
+            this.set('searchPatInput','')
             this.set('searchNameInputOpened',!this.searchNameInputOpened)
             this.set('filterAccuracy',null)
             if(!this.searchNameInputOpened) {
-                this._updateSuggFromAccuracy()
-                this.set('toImportPatsSearch',[])
+                this._smartSuggestion()
+                this.set('suggestedPatientsList',[])
             }
         }
     }
     _updatePatSearch() {
         this.set('canAssign',false)
         this.set('filterAccuracy',null)
-	    if (this.searchPatValue.length >= 2) {
+	    if (this.searchPatInput.length >= 2) {
             this.set('isLoadingPatsSuggest',true)
-            console.log('updatePatSearch',this.searchPatValue)
+            console.log('updatePatSearch',this.searchPatInput)
             setTimeout(() =>{
-                this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, this.searchPatValue, null, null, 100, "asc").then(pats=>{
+                this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, this.searchPatInput, null, null, 100, "asc").then(pats=>{
                     console.log('pats',pats)
-                    this.set('toImportPatsSearch',pats.rows || [])
+                    this.set('suggestedPatientsList',pats.rows || [])
                     this.set('isLoadingPatsSuggest',false)
                     this._uncheckBoxes()
                 })
             },2000)
         } else {
-            this.set('toImportPatsSearch',[])
+            this.set('suggestedPatientsList',[])
             this.set('isLoadingPatsSuggest',false)
         }
     }
 
-    _updateSuggFromAccuracy(e) {
-	    const filterAccuracy = e && e.target && e.target.getAttribute('accuracy') || 'low'
+    _patNameSplit() {
+        const lastName = this.resInfoBeingAssigned.lastName||''
+        const firstName = this.resInfoBeingAssigned.firstName||''
+        const preSplitted = _.replace(_.replace(lastName+(firstName.length ? " "+firstName : ''),"'"," "),"-"," ") // prepare to split
+        const splittedName = preSplitted.split(' ')
+        this.set('suggestPatSplittedInfos',splittedName)
+        return splittedName
+    }
+
+    _smartSuggestion() {
         this.set('isLoadingPatsSuggest',true)
         this.set('searchNameInputOpened',false)
-        this.set('toImportPatsSearch',[])
-        const searchString = this.resInfoBeingAssigned && ((this.resInfoBeingAssigned.lastName||'')+" "+(this.resInfoBeingAssigned.firstName||'')+" "+(this.resInfoBeingAssigned.formatedBirthDate||'')+" "+(this.resInfoBeingAssigned.dateOfBirth||'19700101')).toUpperCase() || ''
-	    let splittedSearch = (searchString.split(' ')).sort((a, b)=>b.length - a.length) // longest string first
-        console.log('splittedSearch',splittedSearch)
+        this.set('suggestedPatientsList',[])
+        if (this.resInfoBeingAssigned && this.resInfoBeingAssigned.dateOfBirth) { // WITH BIRTHDATE
+            const formatedDemandDate = this.api.moment(this.resInfoBeingAssigned.dateOfBirth).format('DD/MM/YYYY')
+            this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, formatedDemandDate, null, null, 100, "asc").then(paginated=>{
+                const patients = paginated.rows || []
+                if (!patients.length) { // no result ?
+                    this._getPatientsDefaultSuggest() // same as no birthdate
+                } else if (patients.length <= 10) {
+                    this.set('suggestedPatientsList',patients)
+                    this.set('isLoadingPatsSuggest',false)
+                } else if (patients.length > 10 && patients.length <= 20) {
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,3)) // LASTNAME && FIRSTNAME
+                    this.set('isLoadingPatsSuggest',false)
+                } else if (patients.length > 20) {
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
+                    this.set('isLoadingPatsSuggest',false)
+                }
+            })
+        } else { // NO BIRTHDATE
+            this._getPatientsDefaultSuggest()
+        }
+    }
+
+    _getPatientsDefaultSuggest() {
         let patsToDisplay = []
-        Promise.all(
-            splittedSearch.map(str=>{
-                if (str.length) {
-                    return this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, str, null, null, 100, "asc").then(all=>{
-                        all.rows.map(p=> {
-                            if (filterAccuracy == 'high') {
-                                if (!_.includes(patsToDisplay, p)
-                                    && searchString.includes(p.lastName && p.lastName.toUpperCase() || '')
-                                    && searchString.includes(p.firstName && p.firstName.toUpperCase() || '')
-                                    && searchString.includes(p.dateOfBirth || '19700101')
-                                ) {
-                                    patsToDisplay.push(p)
-                                }
-                            } else if (filterAccuracy == 'mid') {
-                                if (!_.includes(patsToDisplay, p) &&
-                                    (searchString.includes(p.lastName && p.lastName.toUpperCase() || '')
-                                    || searchString.includes(p.firstName && p.firstName.toUpperCase() || '')
-                                    || searchString.includes(p.dateOfBirth || '19700101'))
-                                ) {
-                                    patsToDisplay.push(p)
-                                }
-                            } else {
-                                if (!_.includes(patsToDisplay, p)) patsToDisplay.push(p)
-                            }
-                        }) // rows map end
+        const promiseArray = this._patNameSplit()
+        this.set('suggestPatSplittedInfos',promiseArray)
+        Promise.all(promiseArray.map(string=>{
+            if (string.length) {
+                return this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, string, null, null, 100, "asc").then(paginated=>{
+                    paginated.rows.map(p=> {
+                        if (!patsToDisplay.includes(p)) patsToDisplay.push(p)
                     })
-                } else return
-            }) // splittedSearch map end
-        ).then(()=>{
-            console.log('toImportPatsSearch',patsToDisplay)
-            this.set('toImportPatsSearch',patsToDisplay)
-            this.set('isLoadingPatsSuggest',false)
-        })
+                })
+            } else return
+        })) // promiseArray map end of promise
+            .then(()=>{
+                const patients = [...new Set(patsToDisplay)] // remove duplicates
+                console.log('no date, results :', patients)
+                if (patients.length <= 10) {
+                    this.set('suggestedPatientsList',patients)
+                    this.set('isLoadingPatsSuggest',false)
+                }
+                if (patients.length > 10 && patients.length <= 20) {
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
+                }
+                if (patients.length > 20) {
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,4)) // LASTNAME || FIRSTNAME
+                }
+                this.set('isLoadingPatsSuggest',false)
+            })
+    }
+
+    _smartPatientsFilter(patients,accuracy) {
+	    const suggestedPatientsList = patients && patients.length ? patients : this.suggestedPatientsList
+        const smartSuggestionAccuracy = accuracy || this.smartSuggestionAccuracy
+	    /* tolerance  :
+	        1 = XXXX&&first // firstName only
+	        2 = last&&XXXXX // lastName only
+	        3 = last&&first // both lastName and firstName
+	        4 = last||first // lastName or firstName
+        */
+        if (suggestedPatientsList.length <= 10) {
+            return suggestedPatientsList
+        }
+        const smartResInfo = {
+            search: ((this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName+" "||'')+(this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName||'')).toUpperCase(),
+            lastName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName+" "||'').toUpperCase(),
+            firstName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName+" "||'').toUpperCase()
+        }
+        if (smartSuggestionAccuracy == 1) {
+            return suggestedPatientsList.filter(p=>p.firstName.toUpperCase().includes(smartResInfo.firstName))
+        }
+        if (smartSuggestionAccuracy == 2) {
+            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName))
+        }
+        if (smartSuggestionAccuracy == 3) {
+            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) && p.firstName.toUpperCase().includes(smartResInfo.firstName))
+        }
+        if (smartSuggestionAccuracy == 4) {
+            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) || p.firstName.toUpperCase().includes(smartResInfo.firstName))
+        }
+        return suggestedPatientsList.filter(p=>smartResInfo.search.includes(p.lastName && p.lastName.toUpperCase() || '') || smartResInfo.search.includes(p.firstName && p.firstName.toUpperCase() || '')
+        )
     }
 
     _hasLabResult() {
@@ -1459,7 +1528,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 			this.set('isLoadingMessage',true)
 			this.set('searchNameInputOpened',false)
             this.set('selectName','')
-            this.set('toImportPatsSearch',[])
+            this.set('suggestedPatientsList',[])
             this.set('isDeleted',this.selectedMessage && this.selectedMessage.transportGuid && this.selectedMessage.transportGuid.startsWith("BIN"))
             this.set('isHidden',this.selectedMessage && this.selectedMessage.status && ((this.selectedMessage.status & 1<<14) !== 0))
             this.set('unassignedResults',selMsg.unassignedResults)
@@ -1511,16 +1580,17 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         if(!this.assignModal) {
             this.set('documentBeingAssigned',documentBeingAssigned)
             resInfo.formatedDemandDate = this.api.moment(resInfo.demandDate || 0).format('DD/MM/YYYY hh:mm')
-            resInfo.formatedBirthDate= this.api.moment(resInfo.dateOfBirth || 0).format('DD/MM/YYYY')
+            resInfo.formatedBirthDate= resInfo && resInfo.dateOfBirth && this.api.moment(resInfo.dateOfBirth).format('DD/MM/YYYY') || this.localize('no_bd','No birthday',this.language)
             this.set('resInfoBeingAssigned', resInfo)
             this.set('assignModal',true)
             this.set('targetPats',[])
             this.set('searchNameInputOpened',false)
-            this.set('searchPatValue','')
-            this.set('toImportPatsSearch',[])
+            this.set('searchPatInput','')
+            this.set('suggestedPatientsList',[])
             this.set('isLoadingPatsSuggest',false)
             this.set('selectedProtocol',0)
-            this._updateSuggFromAccuracy()
+            this._smartSuggestion()
+            this._patNameSplit()
         }
     }
 

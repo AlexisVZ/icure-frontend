@@ -833,6 +833,9 @@
                 justify-content: flex-end;
                 min-height: 48px;
             }
+            #import-suggest .line.search-line {
+                max-height: 92px;
+            }
 
             paper-listbox {
                 background: transparent !important;
@@ -886,14 +889,31 @@
             }
             .search-patients .suffix {
                 font-size: .7em;
+                color: var(--app-background-color-darker);
             }
-            iron-icon.search-patients.close {
+            .search-patients .suffix .tag {
+                background: var(--app-background-color-dark);
+                border-radius: 3px;
+                height: 20px;
+                margin: 2px 0;
+                color: var(--app-primary-color);
+            }
+            paper-icon-button.search-patients.close {
                 background: var(--app-background-color-darker);
-                height: 52px;
-                width: 52px;
-                padding: 16px;
+                height: 36px;
+                width: 36px;
+                padding: 0 12px;
                 box-sizing: border-box;
-                margin: 8px;
+                margin: 24px 8px 0 8px;
+                border-radius: 50%;
+                cursor: pointer;
+            }
+            paper-icon-button.search-patients.erase {
+                background: var(--app-background-color-darker);
+                height: 20px;
+                width: 20px;
+                padding: 0 4px;
+                box-sizing: border-box;
                 border-radius: 50%;
                 cursor: pointer;
             }
@@ -1090,7 +1110,7 @@
                             </div>
                             <div class="pat-box">
                                 <h5>[[localize('sch_pats','Search patients',language)]]</h5>
-                                <div class="line grow">
+                                <div class="line grow search-line">
                                     <template is="dom-if" if="[[!searchNameInputOpened]]">
                                         <paper-button class="search-patients manual" on-tap="togglesearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
                                     </template>
@@ -1103,16 +1123,16 @@
                                             <!--</paper-listbox>-->
                                         <!--</paper-dropdown-menu>-->
                                         <paper-input class="search-patients" value="{{searchPatInput}}" label="[[localize('pati','Patient',language)]]">
-                                            <!--<template is="dom-if" if="[[!searchPatInput.length]]">-->
-                                                <!--<div class="suffix" slot="suffix">-->
-                                                    <!--<span>Fast search</span>-->
-                                                    <!--<template is="dom-repeat" items="[[suggestPatSplittedInfos]]">-->
-                                                        <!--<paper-button class="tag">[[item]]</paper-button>-->
-                                                    <!--</template>-->
-                                                <!--</div>-->
-                                            <!--</template>-->
+                                            <template is="dom-if" if="[[!searchPatInput.length]]">
+                                                <div class="suffix" slot="suffix">
+                                                    <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
+                                                    <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
+                                                        <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </paper-input>
-                                        <iron-icon class="search-patients close"  icon="close" on-tap="togglesearchNameInputOpened"></iron-icon>
+                                        <paper-icon-button class="search-patients close" icon="vaadin:close" on-tap="togglesearchNameInputOpened"></paper-icon-button>
                                     </template>
                                 </div>
                                 <div class="scrollbox patlist">
@@ -1364,6 +1384,13 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         checkboxes.forEach(c=>c.checked = false)
     }
 
+    _fillInputSearch(e) {
+	    const fill = e && e.target && e.target.value || ''
+        if (fill.length) {
+            this.set('searchPatInput',fill)
+        }
+    }
+
     togglesearchNameInputOpened() {
 	    if (!this.isLoadingPatsSuggest) {
             this.set('searchPatInput','')
@@ -1451,10 +1478,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     this.set('isLoadingPatsSuggest',false)
                 }
                 if (patients.length > 10 && patients.length <= 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,4)) // LASTNAME || FIRSTNAME
                 }
                 if (patients.length > 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,4)) // LASTNAME || FIRSTNAME
+                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
                 }
                 this.set('isLoadingPatsSuggest',false)
             })
@@ -1464,8 +1491,8 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	    const suggestedPatientsList = patients && patients.length ? patients : this.suggestedPatientsList
         const smartSuggestionAccuracy = accuracy || this.smartSuggestionAccuracy
 	    /* tolerance  :
-	        1 = XXXX&&first // firstName only
-	        2 = last&&XXXXX // lastName only
+	        1 = XXXX&&first // firstName match
+	        2 = last&&XXXXX // lastName match
 	        3 = last&&first // both lastName and firstName
 	        4 = last||first // lastName or firstName
         */

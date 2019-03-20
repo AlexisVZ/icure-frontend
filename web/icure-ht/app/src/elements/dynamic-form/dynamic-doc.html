@@ -213,7 +213,7 @@
             }
 
             div.assignStatus {
-                border-radius: 16px;
+                border-radius: 3px;
                 padding: 0 8px 0 2px;
             }
             div.assignStatus.green {
@@ -285,8 +285,8 @@
                 <template is="dom-if" if="[[!isPatDetail]]">
                     <!--<paper-icon-button id="print-ico-lab-[[resInfo.protocol]]" class="print-ico" icon="print" on-tap="_print" dataset-item$="[[resInfo]]"></paper-icon-button>-->
                     <!--<paper-tooltip for="print-ico-lab-[[resInfo.protocol]]" position="left">[[localize('print','Print',language)]]</paper-tooltip>-->
-                    <!--<paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>-->
-                    <!--<paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>-->
+                    <paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>
+                    <paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                     <paper-icon-button id="assign-ico-lab-[[resInfo.protocol]]" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions" data-item$="[[resInfo]]"></paper-icon-button>
                     <paper-tooltip for="assign-ico-lab-[[resInfo.protocol]]" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                 </template>

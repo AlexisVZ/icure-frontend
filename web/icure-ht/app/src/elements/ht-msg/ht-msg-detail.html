@@ -22,7 +22,7 @@
 <link rel="import" href="../../../bower_components/vaadin-icons/vaadin-icons.html">
 <link rel="import" href="../../../bower_components/vaadin-upload/vaadin-upload.html">
 <link rel="import" href="../../../bower_components/vaadin-checkbox/vaadin-checkbox.html">
-<!--<link rel="import" href="../../../bower_components/vaadin-radio-button/vaadin-radio-button.html">-->
+<link rel="import" href="../../../bower_components/vaadin-date-picker/vaadin-date-picker.html">
 
 <link rel="import" href="../../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../../bower_components/paper-input/paper-input-container.html">
@@ -137,6 +137,7 @@
 				background: transparent;
 				box-shadow: none;
                 flex-grow: 0;
+                z-index: -1;
 			}
 
 			.horizontal {
@@ -734,13 +735,20 @@
                 height: calc(100vh - 112px);
                 justify-content: flex-start;
                 background: #fff;
-                padding: 8px;
                 border: 1px solid var(--app-background-color-dark);
                 box-shadow: var(--app-shadow-elevation-1);
                 border-radius: 4px;
                 z-index: 999;
                 flex-direction: column;
                 margin: 0 auto;
+                padding-bottom: 8px;
+            }
+            #import-suggest h4 {
+                background: var(--app-background-color-dark);
+                margin-top: 0;
+                padding: 16px 24px;
+                font-size: var(--paper-font-title_-_font-size);
+                margin-bottom: 12px;
             }
 
             #import-suggest .modal-line {
@@ -749,10 +757,23 @@
                 flex-grow: 1;
             }
             #import-suggest .laboInfo {
-                background: var(--app-background-color-dark);
+                background: var(--app-background-color);
+                border: 1px solid var(--app-background-color-dark);
                 border-radius: 4px;
-                padding: 8px;
+                max-width: 65%;
+                padding: 8px 0;
+                margin: 8px;
+                flex-grow: 1;
             }
+            #import-suggest .laboInfo > * {
+                padding: 0 8px;
+            }
+
+            #import-suggest .laboInfo .labo-protocol .assign-info {
+                float: right;
+                padding-right: 8px;
+            }
+
             #import-suggest .modal-line > .pat-box {
                 flex-grow: 1;
                 display: flex;
@@ -767,7 +788,7 @@
             #import-suggest .lab-details {
                 flex-grow: 1;
                 flex-direction: column !important;
-                margin-bottom: 8px;
+                margin: 0 8px 8px 8px;
             }
             #import-suggest .lab-details .sheet {
                 overflow-y: auto;
@@ -782,6 +803,7 @@
                 overflow-x: hidden;
                 background: var(--app-background-color-dark);
                 border-radius: 4px;
+                margin: 8px;
                 padding: 4px;
                 display: flex;
                 flex-direction: column;
@@ -805,7 +827,6 @@
                 display: flex;
                 flex-direction: row;
                 justify-content: flex-start;
-                width: 100%;
             }
             #import-suggest .search-label {
                 margin: 8px;
@@ -832,9 +853,10 @@
             #import-suggest .save-line {
                 justify-content: flex-end;
                 min-height: 48px;
+                margin-right: 4px;
             }
             #import-suggest .line.search-line {
-                max-height: 92px;
+                max-height: 64px;
             }
 
             paper-listbox {
@@ -873,19 +895,24 @@
             }
 
             paper-button.search-patients{
-                background: var(--app-background-color-darker);
-                margin: 8px 4px;
+                background: var(--app-secondary-color);
+                margin: 8px;
                 flex-grow: 1;
                 height: 52px;
                 text-align: center;
                 overflow: hidden;
+                overflow-x: hidden;
+                overflow-y: hidden;
+                box-shadow: var(--app-shadow-elevation-1);
             }
-            paper-button.search-patients.manual {
-                margin-right: 0;
+            paper-button.search-patients[disabled] {
+                background: var(--app-background-color-darker);
+                box-shadow: none;
             }
             paper-input.search-patients {
                 flex-grow: 1;
                 height: 80px;
+                margin: 0 8px;
             }
             .search-patients .suffix {
                 font-size: .7em;
@@ -907,6 +934,10 @@
                 margin: 24px 8px 0 8px;
                 border-radius: 50%;
                 cursor: pointer;
+            }
+            paper-icon-button.search-patients.close[disabled] {
+                background: transparent;
+                border: 1px solid var(--app-background-color-darker);
             }
             paper-icon-button.search-patients.erase {
                 background: var(--app-background-color-darker);
@@ -1086,33 +1117,49 @@
                     <template is="dom-if" if="[[!_isEqualTo(item.documentLocation,'body')]]">
                         <div class="layout-vertical annexe-card">
                             <dynamic-doc id="[[item.id]]" api="[[api]]" user="[[user]]" patient="[[patient]]" document-id="[[item.id]]" i18n="[[i18n]]" language="[[language]]"
-                                         resources="[[resources]]" title="[[item.label]]" downloadable="true" on-open-suggestions="openSuggestions" unassigned-results="[[selectedMessage.unassignedResults]]"></dynamic-doc>
+                                         resources="[[resources]]" title="[[item.label]]" downloadable="true" on-open-suggestions="openSuggestions"
+                                         assigned-results="[[selectedMessage.assignedResults]]"
+                                         unassigned-results="[[selectedMessage.unassignedResults]]"></dynamic-doc>
                         </div>
                     </template>
                 </template>
 
                 <template is="dom-if" if="[[assignModal]]">
                     <div id="import-suggest">
-                        <div class="line">
-                            <h4>[[localize('set_attach','Set attachment',language)]]</h4> <ht-spinner class="patlist-spinner" active="[[isLoadingPatsSuggest]]"></ht-spinner>
-                        </div>
+                        <h4>[[localize('set_attach','Set attachment',language)]]</h4> <ht-spinner class="patlist-spinner" active="[[isLoadingPatsSuggest]]"></ht-spinner>
                         <template is="dom-if" if="[[resInfoBeingAssigned]]">
                         <div class="modal-line">
-                            <div>
-                                <h5>[[localize('un_attachs','Unassigned results',language)]]</h5>
-                                <div class="laboInfo">
-                                    <div class="pat-name">[[localize('inv_pat','Patient',language)]] : [[resInfoBeingAssigned.sex]]. [[resInfoBeingAssigned.lastName]] [[resInfoBeingAssigned.firstName]] - [[resInfoBeingAssigned.formatedBirthDate]]
-                                        <template is="dom-if" if="[[resInfoBeingAssigned.ssin]]"> - [[resInfoBeingAssigned.ssin]]</template>
+                            <div class="line">
+                                <template is="dom-if" if="[[resInfoBeingAssigned.lastName.length]]">
+                                    <div class="laboInfo col">
+                                        <div class="pat-name">[[localize('inv_pat','Patient',language)]] : [[resInfoBeingAssigned.sex]]. [[resInfoBeingAssigned.lastName]] [[resInfoBeingAssigned.firstName]]
+                                            <template is="dom-if" if="[[resInfoBeingAssigned.ssin]]"> - [[resInfoBeingAssigned.ssin]]</template>
+                                        </div>
+                                        <div class="pat-birthdate"><b>[[localize('birthDate','Birthdate',language)]]</b> : [[resInfoBeingAssigned.formatedBirthDate]]</div>
                                     </div>
-                                    <div class="labo-info labo-name"><b>[[localize('cdItemLab','Laboratory',language)]]</b> : [[resInfoBeingAssigned.protocol]] - [[resInfoBeingAssigned.labo]]</div>
-                                    <div class="demand-date">[[localize('date','Date',language)]] : [[resInfoBeingAssigned.formatedDemandDate]]</div>
-                                </div>
+                                </template>
+                                <template is="dom-if" if="[[resInfoBeingAssigned.protocol.length]]">
+                                    <div class="laboInfo col">
+                                        <div class="labo-info labo-name"><b>[[localize('cdItemLab','Laboratory',language)]]</b> : [[resInfoBeingAssigned.labo]]</div>
+                                        <div class$="labo-info labo-protocol assigned-[[_isLabAssigned(resInfoBeingAssigned.protocol)]]"><b>[[localize('prot','Protocol',language)]]</b> : [[resInfoBeingAssigned.protocol]]
+                                            <template is="dom-if" if="[[_isLabAssigned(resInfoBeingAssigned.protocol)]]">
+                                                <span class="assign-info is-assigned"><iron-icon icon="check"></iron-icon> [[localize('assigned','Assigned',language)]]</span>
+                                            </template>
+                                            <template is="dom-if" if="[[!_isLabAssigned(resInfoBeingAssigned.protocol)]]">
+                                                <span class="assign-info not-assigned"><iron-icon icon="clear" class="red"></iron-icon> [[localize('unassigned','Unassigned',language)]]</span>
+                                            </template>
+                                        </div>
+                                        <div class="demand-date"><b>[[localize('date','Date',language)]]</b> :
+                                            [[resInfoBeingAssigned.formatedDemandDate]]
+                                            <!--<vaadin-date-picker id="assignDatePicker" value="{{customAssignDate}}"></vaadin-date-picker>-->
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
                             <div class="pat-box">
-                                <h5>[[localize('sch_pats','Search patients',language)]]</h5>
                                 <div class="line grow search-line">
                                     <template is="dom-if" if="[[!searchNameInputOpened]]">
-                                        <paper-button class="search-patients manual" on-tap="togglesearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
+                                        <paper-button class="search-patients manual" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
                                     </template>
                                     <template is="dom-if" if="[[searchNameInputOpened]]">
                                         <!--<paper-dropdown-menu>-->
@@ -1122,7 +1169,7 @@
                                                 <!--<paper-item id="2">[[localize('accur_hih','High accuracy',language)]]</paper-item>-->
                                             <!--</paper-listbox>-->
                                         <!--</paper-dropdown-menu>-->
-                                        <paper-input class="search-patients" value="{{searchPatInput}}" label="[[localize('pati','Patient',language)]]">
+                                        <paper-input id="searchPatientsField" class="search-patients" value="{{searchPatInput}}" label="[[localize('sch_pats','Search patients',language)]]">
                                             <template is="dom-if" if="[[!searchPatInput.length]]">
                                                 <div class="suffix" slot="suffix">
                                                     <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
@@ -1132,7 +1179,7 @@
                                                 </div>
                                             </template>
                                         </paper-input>
-                                        <paper-icon-button class="search-patients close" icon="vaadin:close" on-tap="togglesearchNameInputOpened"></paper-icon-button>
+                                        <paper-icon-button class="search-patients close" icon="vaadin:close" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"></paper-icon-button>
                                     </template>
                                 </div>
                                 <div class="scrollbox patlist">
@@ -1333,6 +1380,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             suggestPatSplittedInfos: {
 			    type: Array,
                 value: []
+            },
+            customAssignDate: {
+			    type: String,
+                value: ''
             }
 		};
 	}
@@ -1391,14 +1442,21 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         }
     }
 
-    togglesearchNameInputOpened() {
+    toggleSearchNameInputOpened() { //
 	    if (!this.isLoadingPatsSuggest) {
-            this.set('searchPatInput','')
-            this.set('searchNameInputOpened',!this.searchNameInputOpened)
-            this.set('filterAccuracy',null)
-            if(!this.searchNameInputOpened) {
-                this._smartSuggestion()
-                this.set('suggestedPatientsList',[])
+	        if (this.searchPatInput.length) {
+	            this.set('searchPatInput','')
+                // this.root.getElementById('searchPatientsField').inputElement.focus()
+            } else {
+                this.set('searchPatInput','')
+                this.set('searchNameInputOpened',!this.searchNameInputOpened)
+                this.set('filterAccuracy',null)
+                if(this.searchNameInputOpened) {
+                    // this.root.getElementById('searchPatientsField').inputElement.focus()
+                } else {
+                    this.set('suggestedPatientsList',[])
+                    this._smartSuggestion()
+                }
             }
         }
     }
@@ -1607,6 +1665,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         if(!this.assignModal) {
             this.set('documentBeingAssigned',documentBeingAssigned)
             resInfo.formatedDemandDate = this.api.moment(resInfo.demandDate || 0).format('DD/MM/YYYY hh:mm')
+            this.set('customAssignDate',resInfo.demandDate ? this.api.moment(resInfo.demandDate).format('YYYY-MM-DD') : '')
             resInfo.formatedBirthDate= resInfo && resInfo.dateOfBirth && this.api.moment(resInfo.dateOfBirth).format('DD/MM/YYYY') || this.localize('no_bd','No birthday',this.language)
             this.set('resInfoBeingAssigned', resInfo)
             this.set('assignModal',true)
@@ -1972,6 +2031,14 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     isUnread(m) {
         return (m.status & (1 << 1)) !== 0 ? true : false
+    }
+
+    _isLabAssigned(protocol) {
+        if (this.selectedMessage && this.selectedMessage.unassignedResults && this.selectedMessage.unassignedResults.length) {
+            return this.selectedMessage.unassignedResults.indexOf(protocol) == -1 ? true : false // is not in unassigned
+        } else {
+            return this.selectedMessage && this.selectedMessage.assignedResults && Object.keys(this.selectedMessage.assignedResults).length
+        }
     }
 }
 

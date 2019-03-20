@@ -234,7 +234,7 @@
                             <paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>
                             <paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                         </template>
-                        <paper-icon-button id="assign-ico-attach" class="assign-ico" icon="assignment-returned" on-tap="openSuggestions"  document$="[[item]]"></paper-icon-button>
+                        <paper-icon-button id="assign-ico-attach" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions"  document$="[[item]]"></paper-icon-button>
                         <paper-tooltip for="assign-ico-attach" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                     </template>
                 </template>
@@ -408,6 +408,9 @@ class DynamicDoc extends Polymer.TkLocalizerMixin(Polymer.Element) {
             unassignedResults: {
 			    type: Array
             },
+            assignedResults: {
+                type: Array
+            },
             isPatDetail: {
 			    type: Boolean,
                 value: false
@@ -444,7 +447,7 @@ class DynamicDoc extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	    if (this.unassignedResults && this.unassignedResults.length) {
 	        return this.unassignedResults.indexOf(protocol) == -1 ? true : false // is not in unassigned
         } else {
-	        return true
+            return this.assignedResults && Object.keys(this.assignedResults).length
         }
     }
 

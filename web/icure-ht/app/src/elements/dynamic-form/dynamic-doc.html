@@ -36,10 +36,12 @@
 			}
 
 			.pat-details-card {
-				margin: 0 32px 32px;
+                display: flex;
+                flex-direction: column;
+				margin: 0 16px 16px 16px;
 				padding:0 8px 8px;
 				overflow: hidden;
-                width: calc(100% - 64px);
+                width: calc(100% - 32px);
 			}
             .pat-details-card hr {
                 border: 1px solid var(--app-background-color-darker)
@@ -135,8 +137,6 @@
             }
 
             .resInfos {
-                display: flex;
-                flex-direction: column;
                 background: var(--app-background-color-dark);
                 border-radius: 4px;
                 padding: 8px;
@@ -170,7 +170,7 @@
                 justify-content: space-between;
             }
 
-            pre.result {
+            pre.result, div.label {
                 border: 1px solid var(--app-background-color-dark);
                 border-radius: 4px;
                 overflow-y: auto;
@@ -179,6 +179,10 @@
                 margin: 8px 0;
                 padding: 4px;
                 max-height: 400px;
+            }
+            div.label {
+                min-height: 24px;
+                margin: 8px 0 0 0;
             }
 
             .assignToPat {
@@ -216,27 +220,36 @@
                 border-radius: 3px;
                 padding: 0 8px 0 2px;
             }
-            div.assignStatus.green {
-                background: var(--app-status-color-ok);
+            div.assignStatus.green iron-icon {
+                color: var(--app-status-color-ok);
             }
             div.assignStatus.red {
                 background: var(--app-status-color-pending);
+                cursor: pointer;
             }
             iron-icon.red {
                 color: var(--app-status-color-nok);
             }
+
 		</style>
         <template is="dom-if" if="[[!isLabOrProtocol]]">
+        <template is="dom-if" if="[[_isEqual(document.documentLocation,'body')]]">
+            <template is="dom-if" if="[[attachmentContent.length]]">
             <paper-card class="pat-details-card">
-                <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
-                    <template is="dom-if" if="[[!isPatDetail]]">
-                        <template is="dom-if" if="[[!_pdfMimeType(document.mainUti, document.otherUtis.*, dataUrl)]]">
-                            <paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>
-                            <paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
-                        </template>
-                        <paper-icon-button id="assign-ico-attach" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions"  document$="[[item]]"></paper-icon-button>
-                        <paper-tooltip for="assign-ico-attach" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
+                <span class="title">[[localize('msg_body','Message body',language)]] :</span>
+                <pre class="txt-container">[[attachmentContent]]</pre>
+            </paper-card>
+            </template>
+        </template>
+        <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
+            <paper-card class="pat-details-card">
+                <template is="dom-if" if="[[!isPatDetail]]">
+                    <template is="dom-if" if="[[!_pdfMimeType(document.mainUti, document.otherUtis.*, dataUrl)]]">
+                        <paper-icon-button id="download-ico-lab-[[resInfo.protocol]]" class="download-ico" icon="file-download" on-tap="_downloadAnnex"></paper-icon-button>
+                        <paper-tooltip for="download-ico-lab-[[resInfo.protocol]]" position="left">[[localize('dl','Download',language)]]</paper-tooltip>
                     </template>
+                    <paper-icon-button id="assign-ico-attach" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions"  document$="[[item]]"></paper-icon-button>
+                    <paper-tooltip for="assign-ico-attach" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                 </template>
                 <template is="dom-if" if="[[!_unknownMimeType(document.mainUti, document.otherUtis.*, dataUrl)]]">
                     <template is="dom-if" if="[[!documentId]]">
@@ -260,12 +273,7 @@
                 </template>
                 <template is="dom-if" if="[[_plainMimeType(document.mainUti, document.otherUtis.*)]]">
                     <template is="dom-if" if="[[attachmentContent.length]]">
-                        <template is="dom-if" if="[[_isEqual(document.documentLocation,'body')]]">
-                            <span class="title">[[localize('msg_body','Message body',language)]] :</span>
-                        </template>
-                        <template is="dom-if" if="[[!_isEqual(document.documentLocation,'body')]]">
                             <span class="title">[[_title(document.name, title)]]</span>
-                        </template>
                         <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
                         <template is="dom-if" if="[[preview]]">
                             <pre class="txt-container">[[attachmentContent]]</pre>
@@ -277,6 +285,7 @@
                     <template is="dom-if" if="[[isLoading]]"><ht-spinner active></ht-spinner></template>
                 </template>
             </paper-card>
+        </template>
         </template>
 
         <template is="dom-if" if="[[isLabOrProtocol]]">
@@ -290,7 +299,7 @@
                     <paper-icon-button id="assign-ico-lab-[[resInfo.protocol]]" class="assign-ico" icon="assignment-ind" on-tap="openSuggestions" data-item$="[[resInfo]]"></paper-icon-button>
                     <paper-tooltip for="assign-ico-lab-[[resInfo.protocol]]" position="left">[[localize('assign_to_pat','Assign to a patient',language)]]</paper-tooltip>
                 </template>
-                <span class="title">[[localize('cdItemResult','Results',language)]]</span>
+                <span class="title">[[localize('cdItemResult','Results',language)]] / [[localize('rep','Reports',language)]]</span>
                 <div class="resInfos">
                     <h4>[[resInfo.sex]]. [[resInfo.lastName]] [[resInfo.firstName]]</h4>
                     <div class="line"><b class="label">[[localize('document','Document',language)]]</b><span>[[resInfo.protocol]] - [[resInfo.labo]]</span></div>
@@ -299,7 +308,7 @@
                         <div class="indicator">
                             <div>
                                 <template is="dom-if" if="[[_isLabAssigned(resInfo.protocol)]]"><div class="assignStatus green"><iron-icon icon="check"></iron-icon>  [[localize('assigned','Assigned',language)]]</div></template>
-                                <template is="dom-if" if="[[!_isLabAssigned(resInfo.protocol)]]"><div class="assignStatus red"><iron-icon icon="clear" class="red"></iron-icon> [[localize('unassigned','Unassigned',language)]]</div></template>
+                                <template is="dom-if" if="[[!_isLabAssigned(resInfo.protocol)]]"><div class="assignStatus red" on-tap="openSuggestions" data-item$="[[resInfo]]"><iron-icon icon="clear" class="red"></iron-icon> [[localize('unassigned','Unassigned',language)]]</div></template>
                             </div>
                             <div>
                                 <template is="dom-if" if="[[resInfo.complete]]">
@@ -316,15 +325,15 @@
                 </template>
                 <template is="dom-if" if="[[!_moreThan2(resInfo.services)]]">
                     <template is="dom-if" if="[[_serviceDescription(resInfo.services.1)]]">
-                        <div class="line-flex">
+                        <!--<div class="line-flex">-->
                             <div class="label">[[_serviceDescription(resInfo.services.0)]]</div>
                             <pre class="result">[[_serviceDescription(resInfo.services.1)]]</pre>
-                        </div>
+                        <!--</div>-->
                     </template>
                     <template is="dom-if" if="[[!_serviceDescription(resInfo.services.1)]]">
-                        <div class="line-flex">
+                        <!--<div class="line-flex">-->
                             <pre class="result">[[_serviceDescription(resInfo.services.0)]]</pre>
-                        </div>
+                        <!--</div>-->
                     </template>
                 </template>
                 <!--<div class="pointers-line">-->

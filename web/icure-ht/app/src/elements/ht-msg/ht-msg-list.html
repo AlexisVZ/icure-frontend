@@ -295,7 +295,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
                 .table-top > div.indicators {
                     justify-content: flex-end;
-                    padding-right: 24px;
+                    padding-right: 12px;
                 }
                 .table-top > div.indicators > div {
                     display: flex;
@@ -468,6 +468,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     width: 24px;
                     box-sizing: border-box;
                     border-radius: 50%;
+                    box-shadow: var(--app-shadow-elevation-1);
                 }
 
                 .warn {
@@ -728,7 +729,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </vaadin-grid>
                 <div class="bottom-commands">
                     <template is="dom-if" if="[[!isLoadingMailList]]">
-                        <div class="grid-size-indicator nophone"> [[pageStart]] – [[pageEnd]] [[localize('sur','sur',language)]] [[gridSize]]</div>
+                        <div class="grid-size-indicator"> [[pageStart]] – [[pageEnd]] [[localize('sur','sur',language)]] [[gridSize]]</div>
                         <paper-icon-button id="previous-page-change" icon="chevron-left"class="change-page" on-tap="_prevPage"></paper-icon-button>
                         <paper-icon-button id="next-page-change" icon="chevron-right" class="change-page" on-tap="_nextPage"></paper-icon-button>
                         <!-- <div id="page-selector" class="selector">
@@ -736,8 +737,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                 <paper-button class="page-number" on-tap="_selectPage" data-item$="[[item]]" selected$="[[_isPage(page, item)]]">[[item]]</paper-button>
                             </template>
                         </div> -->
-                       
-                        <div class="nophone"><paper-icon-button id="scrolltop" class="scroll-top" icon="arrow-upward" on-tap="_scrollToTop"></paper-icon-button></div>
+                        <paper-icon-button id="scrolltop" class="scroll-top" icon="arrow-upward" on-tap="_scrollToTop"></paper-icon-button>
                         <paper-tooltip for="previous-page-change" position="left" offset="12">[[localize('page_prev','Previous page',language)]]</paper-tooltip>
                         <paper-tooltip for="next-page-change" position="right" offset="-5">[[localize('page_next','Next page',language)]]</paper-tooltip>
                         <paper-tooltip for="scrolltop" position="left">[[localize('scrolltop_list','Scroll to top of the list',language)]]</paper-tooltip>

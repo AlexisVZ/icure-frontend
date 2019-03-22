@@ -459,7 +459,7 @@
 				border-bottom: 1px solid var(--app-background-color-dark);
 				height: 56px;
                 z-index: 10;
-                padding: 8px;
+                padding: 8px 4px;
                 box-sizing: border-box;
                 display: flex;
                 flex-flow: row wrap;
@@ -535,9 +535,13 @@
 				color: var(--app-text-color);
 				text-transform: capitalize;
 				transition: all .12s cubic-bezier(0.075, 0.82, 0.165, 1);
-				margin-bottom: 8px;
+				margin: 0 0 8px 0;
 				height: 40px;
+                padding: 4px;
 			}
+            .msg-detail-btn.del-button {
+                margin-right: 16px;
+            }
 
 			.msg-detail-btn:hover{
 				background-color: var(--app-background-color-dark);
@@ -571,6 +575,11 @@
 				justify-content: space-between;
                 height: 80px;
 			}
+            .space-between.from-to-line {
+                justify-content: space-between;
+                height: initial;
+                margin-bottom: 8px;
+            }
 
 			.layout-horizontal--flex-end{
 				justify-content: flex-end;
@@ -691,7 +700,7 @@
             }
 
             h2.subject {
-                margin: 24px 0;
+                margin: 8px 0 8px 0;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
@@ -728,11 +737,11 @@
             #import-suggest {
                 position: fixed;
                 display: flex;
-                top: 70px;
-                right: 20px;
+                top: 68px;
+                right: 8px;
                 left: initial;
-                width: 81%;
-                height: calc(100vh - 112px);
+                width: calc(100vw - 16px - 16%); /* 16% = left-col */
+                height: calc(100vh - 100px);
                 justify-content: flex-start;
                 background: #fff;
                 border: 1px solid var(--app-background-color-dark);
@@ -904,6 +913,7 @@
                 overflow-x: hidden;
                 overflow-y: hidden;
                 box-shadow: var(--app-shadow-elevation-1);
+                z-index: 1;
             }
             paper-button.search-patients[disabled] {
                 background: var(--app-background-color-darker);
@@ -990,6 +1000,7 @@
 
             @media screen and (max-width: 1025px) {
                 .mobileOnly {display: block;}
+
                 .attached {
                     max-height: 25vh;
                     width: 100%;
@@ -1001,7 +1012,11 @@
                     right: 0;
                     left: 0;
                     box-sizing: border-box;
-                    height: calc(100vh - 94px);
+                    height: calc(100vh - 84px); /* 84px = topbar and bottombar */
+                }
+
+                .scrollbox.patlist .checkbox-item {
+                    padding: 4px 32px;
                 }
 
                 .read-txt {
@@ -1017,12 +1032,14 @@
 
             @media screen and (max-width: 650px) {
                 .noPortable {display: none !important;}
-                #import-suggest {
-                    max-height: 50vh;
+                #import-suggest .laboInfo {
+                    overflow-y: auto;
                 }
+            }
 
+            @media screen and (max-height: 540px) {
                 #import-suggest .scrollbox {
-                    height: 128px;
+                    max-height: 20vh;
                 }
             }
 
@@ -1075,9 +1092,9 @@
                             </template>
                         </div>
                     </div>
-                    
+
                     <div>
-                        <paper-button class="msg-detail-btn" on-tap="close">
+                        <paper-button class="msg-detail-btn del-button" on-tap="close">
                             <iron-icon icon="clear"></iron-icon> [[localize('clo','Close',language)]]
                         </paper-button>
                     </div>
@@ -1091,7 +1108,7 @@
                             </div>
 
                         </div>
-                        <div class="layout-horizontal space-between">
+                        <div class="layout-horizontal space-between from-to-line">
                             <div class="msg-header-grid">
                                 <div class="initials-avatar"><span>[[_getInitials(msg.fromAddress)]]</span></div>
                                 <div class="from">[[msg.fromAddress]]</div>
@@ -1183,9 +1200,9 @@
                                     </template>
                                 </div>
                                 <div class="scrollbox patlist">
-                                    <template is="dom-repeat" items="[[toImportPatsSuggestions]]">
-                                        <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
-                                    </template>
+                                    <!--<template is="dom-repeat" items="[[toImportPatsSuggestions]]">-->
+                                        <!--<paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>-->
+                                    <!--</template>-->
                                     <template is="dom-if" if="[[suggestedPatientsList.length]]">
                                         <template is="dom-repeat" items="[[suggestedPatientsList]]">
                                             <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
@@ -1389,7 +1406,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	}
 
 	static get observers() {
-		return ['_focusChanged(selectedMessage)','_hasLabResult(selectedMessage)','_updateSuggestions(selectedProtocol)',
+		return ['_focusChanged(selectedMessage)','_hasLabResult(selectedMessage)',
             '_updatePatSearch(searchPatInput)',
             '_isConnectedToEhbox(api.tokenId)','_isSentbox(selectedMessage)'];
 	}
@@ -1518,7 +1535,6 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     _getPatientsDefaultSuggest() {
         let patsToDisplay = []
         const promiseArray = this._patNameSplit()
-        this.set('suggestPatSplittedInfos',promiseArray)
         Promise.all(promiseArray.map(string=>{
             if (string.length) {
                 return this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, string, null, null, 100, "asc").then(paginated=>{
@@ -1530,7 +1546,6 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         })) // promiseArray map end of promise
             .then(()=>{
                 const patients = [...new Set(patsToDisplay)] // remove duplicates
-                console.log('no date, results :', patients)
                 if (patients.length <= 10) {
                     this.set('suggestedPatientsList',patients)
                     this.set('isLoadingPatsSuggest',false)
@@ -1547,7 +1562,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     _smartPatientsFilter(patients,accuracy) {
 	    const suggestedPatientsList = patients && patients.length ? patients : this.suggestedPatientsList
-        const smartSuggestionAccuracy = accuracy || this.smartSuggestionAccuracy
+        const smartSuggestionAccuracy = accuracy || 3
 	    /* tolerance  :
 	        1 = XXXX&&first // firstName match
 	        2 = last&&XXXXX // lastName match
@@ -1562,7 +1577,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             lastName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName+" "||'').toUpperCase(),
             firstName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName+" "||'').toUpperCase()
         }
-        if (smartSuggestionAccuracy == 1) {
+        if (smartSuggestionAccuracy <= 1) {
             return suggestedPatientsList.filter(p=>p.firstName.toUpperCase().includes(smartResInfo.firstName))
         }
         if (smartSuggestionAccuracy == 2) {
@@ -1571,11 +1586,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         if (smartSuggestionAccuracy == 3) {
             return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) && p.firstName.toUpperCase().includes(smartResInfo.firstName))
         }
-        if (smartSuggestionAccuracy == 4) {
+        if (smartSuggestionAccuracy >= 4) {
             return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) || p.firstName.toUpperCase().includes(smartResInfo.firstName))
         }
-        return suggestedPatientsList.filter(p=>smartResInfo.search.includes(p.lastName && p.lastName.toUpperCase() || '') || smartResInfo.search.includes(p.firstName && p.firstName.toUpperCase() || '')
-        )
+        // return suggestedPatientsList.filter(p=>smartResInfo.search.includes(p.lastName && p.lastName.toUpperCase() || '') || smartResInfo.search.includes(p.firstName && p.firstName.toUpperCase() || ''))
     }
 
     _hasLabResult() {
@@ -1675,12 +1689,14 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             this.set('suggestedPatientsList',[])
             this.set('isLoadingPatsSuggest',false)
             this.set('selectedProtocol',0)
+            this._uncheckBoxes()
             this._smartSuggestion()
             this._patNameSplit()
         }
     }
 
 	closeSuggestions() {
+        this._uncheckBoxes()
 	    this.set('documentBeingAssigned',null)
         this.set('resInfoBeingAssigned', null)
         this.set('targetPats',[])

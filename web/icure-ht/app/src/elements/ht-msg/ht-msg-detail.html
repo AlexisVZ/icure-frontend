@@ -1187,7 +1187,7 @@
                                             <!--</paper-listbox>-->
                                         <!--</paper-dropdown-menu>-->
                                         <paper-input id="searchPatientsField" class="search-patients" value="{{searchPatInput}}" label="[[localize('sch_pats','Search patients',language)]]">
-                                            <template is="dom-if" if="[[!searchPatInput.length]]">
+                                            <template is="dom-if" if="[[suggestPatSplittedInfos.length]]">
                                                 <div class="suffix" slot="suffix">
                                                     <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
                                                     <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
@@ -1501,7 +1501,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         const lastName = this.resInfoBeingAssigned.lastName||''
         const firstName = this.resInfoBeingAssigned.firstName||''
         const preSplitted = _.replace(_.replace(lastName+(firstName.length ? " "+firstName : ''),"'"," "),"-"," ") // prepare to split
-        const splittedName = preSplitted.split(' ')
+        const splittedName = preSplitted.length ? preSplitted.split(' ') : []
         this.set('suggestPatSplittedInfos',splittedName)
         return splittedName
     }

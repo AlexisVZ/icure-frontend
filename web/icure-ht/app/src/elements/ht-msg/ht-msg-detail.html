@@ -757,7 +757,7 @@
                 margin-top: 0;
                 padding: 16px 24px;
                 font-size: var(--paper-font-title_-_font-size);
-                margin-bottom: 12px;
+                margin-bottom: 8px;
             }
 
             #import-suggest .modal-line {
@@ -813,7 +813,7 @@
                 background: var(--app-background-color-dark);
                 border-radius: 4px;
                 margin: 8px;
-                padding: 4px;
+                /*padding: 4px;*/
                 display: flex;
                 flex-direction: column;
                 margin-bottom: 8px;
@@ -827,8 +827,8 @@
                 border-bottom: 1px solid var(--app-background-color-darker);
                 padding: 4px;
             }
-            .scrollbox.patlist .checkbox-item * div#checkbox.checked {
-                background-color: var(--app-secondary-color-dark);
+            .scrollbox.patlist .checkbox-item.checked-true {
+                background-color: var(--app-secondary-color);
                 border-color: var(--app-secondary-color-dark);
             }
 
@@ -866,6 +866,13 @@
             }
             #import-suggest .line.search-line {
                 max-height: 64px;
+            }
+            #import-suggest .line.search-line.clicked-true {
+                background: var(--app-secondary-color-light);
+                /*border: 2px solid var(--app-secondary-color);*/
+                margin: 8px;
+                box-sizing: border-box;
+                border-radius: 3px;
             }
 
             paper-listbox {
@@ -926,22 +933,21 @@
             }
             .search-patients .suffix {
                 font-size: .7em;
-                color: var(--app-background-color-darker);
             }
             .search-patients .suffix .tag {
-                background: var(--app-background-color-dark);
+                background: var(--app-secondary-color-dark);
                 border-radius: 3px;
                 height: 20px;
                 margin: 2px 0;
-                color: var(--app-primary-color);
+                color: white;
             }
             paper-icon-button.search-patients.close {
-                background: var(--app-background-color-darker);
+                background: var(--app-secondary-color-dark);
                 height: 36px;
                 width: 36px;
                 padding: 0 12px;
                 box-sizing: border-box;
-                margin: 24px 8px 0 8px;
+                margin: 16px 8px 0 8px;
                 border-radius: 50%;
                 cursor: pointer;
             }
@@ -984,6 +990,11 @@
                 justify-content: space-around;
                 text-align: center;
                 font-size: 2em;
+            }
+
+            paper-tooltip {
+                white-space: nowrap;
+                z-index: 10;
             }
             
             @media screen and (max-width: 1336px) {
@@ -1053,8 +1064,8 @@
                             <template is="dom-if" if="[[!isSentbox]]">
                                 <paper-button class="msg-detail-btn" on-tap="_replyMsgs" msgId$='[[msg.id]]'><iron-icon id="reply-msg" icon="reply"></iron-icon>
                                     <span class="nomobile-wide">[[localize('reply','Reply',language)]]</span>
-                                    <paper-tooltip class="wide-only" for="reply-msg">[[localize('reply','Reply',language)]]</paper-tooltip>
                                 </paper-button>
+                                <paper-tooltip class="wide-only" for="reply-msg" position="right">[[localize('reply','Reply',language)]]</paper-tooltip>
                             </template>
                             <!--<paper-button class="msg-detail-btn" on-tap="_forwardMsgs"  msgId$='[[msg.id]]'><iron-icon id="forward-msg" icon="forward"></iron-icon>-->
                                 <!--<span class="nomobile-wide">[[localize('fw','Forward',language)]]</span>-->
@@ -1064,31 +1075,31 @@
                         <template is="dom-if" if="[[isHidden]]">
                             <paper-button class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon id="visibility-msg" icon="visibility"></iron-icon>
                                 <span class="nomobile-wide">[[localize('restore','Restore',language)]]</span>
-                                <paper-tooltip class="wide-only" for="visibility-msg">[[localize('restore','Restore',language)]]</paper-tooltip>
                             </paper-button>
+                            <paper-tooltip class="wide-only" for="visibility-msg" position="right">[[localize('restore','Restore',language)]]</paper-tooltip>
                         </template>
                         <template is="dom-if" if="[[!isHidden]]">
                             <template is="dom-if" if="[[!isDeleted]]">
                                 <paper-button class="msg-detail-btn" on-tap="_hideMsg"><iron-icon id="visibility-off-msg" icon="visibility-off"></iron-icon>
                                     <span class="nomobile-wide">[[localize('hid_msg','Hide message',language)]]</span>
-                                    <paper-tooltip class="wide-only" for="visibility-off-msg">[[localize('hid_msg','Hide message',language)]]</paper-tooltip>
                                 </paper-button>
+                                <paper-tooltip class="wide-only" for="visibility-off-msg" position="right">[[localize('hid_msg','Hide message',language)]]</paper-tooltip>
                             </template>
                         </template>
                         <div class="del-button">
                             <template is="dom-if" if="[[isDeleted]]">
                                 <paper-button class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon id="undo-msg" icon="undo"></iron-icon>
                                     <span class="nomobile-wide">[[localize('restore','Restore',language)]]</span>
-                                    <paper-tooltip class="wide-only" for="undo-msg">[[localize('restore','Restore',language)]]</paper-tooltip>
                                 </paper-button>
+                                <paper-tooltip class="wide-only" for="undo-msg" position="right">[[localize('restore','Restore',language)]]</paper-tooltip>
                                 <!--<paper-button class="msg-detail-btn" on-tap="_deleteMsgForever"  msgId$='[[msg.id]]' ><iron-icon icon="delete-forever"></iron-icon>[[localize('del','Delete',language)]]</paper-button>-->
                             </template>
                             <template is="dom-if" if="[[!isDeleted]]">
                                     <!--<paper-button class="msg-detail-btn" on-tap="_hideMsg"  msgId$='[[msg.id]]' ><iron-icon icon="visibility-off"></iron-icon>[[localize('del','Delete',language)]]</paper-button>-->
                                 <paper-button class="msg-detail-btn" on-tap="_msgToBin"  msgId$='[[msg.id]]' ><iron-icon id="delete-msg" icon="delete"></iron-icon>
                                     <span class="nomobile-wide">[[localize('del','Delete',language)]]</span>
-                                    <paper-tooltip class="wide-only" for="delete-msg">[[localize('del','Delete',language)]]</paper-tooltip>
                                 </paper-button>
+                                <paper-tooltip class="wide-only" for="delete-msg" position="right">[[localize('del','Delete',language)]]</paper-tooltip>
                             </template>
                         </div>
                     </div>
@@ -1115,7 +1126,7 @@
                                 <div class="to">[[localize('to','To',language)]] [[msg.toAddresses]]</div>
                             </div>
                             <div class="layout-horizontal layout-horizontal--flex-end">
-                                <div class="date">[[_timeFormat(msg.received)]]</div>
+                                <div class="date">[[localize('received_on','Received on',language)]] [[_timeFormat(msg.received)]]</div>
                             </div>
                         </div>
                         <template is="dom-if" if="[[msg.patientInss]]">
@@ -1174,7 +1185,7 @@
                                 </template>
                             </div>
                             <div class="pat-box">
-                                <div class="line grow search-line">
+                                <div class$="line grow search-line clicked-[[searchNameInputOpened]]">
                                     <template is="dom-if" if="[[!searchNameInputOpened]]">
                                         <paper-button class="search-patients manual" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
                                     </template>
@@ -1186,17 +1197,27 @@
                                                 <!--<paper-item id="2">[[localize('accur_hih','High accuracy',language)]]</paper-item>-->
                                             <!--</paper-listbox>-->
                                         <!--</paper-dropdown-menu>-->
-                                        <paper-input id="searchPatientsField" class="search-patients" value="{{searchPatInput}}" label="[[localize('sch_pats','Search patients',language)]]">
+                                        <paper-input id="searchPatientsField" class="search-patients" value="{{searchPatInput}}" label="[[localize('sch_pats_man','search patients manually',language)]]">
                                             <template is="dom-if" if="[[suggestPatSplittedInfos.length]]">
-                                                <div class="suffix" slot="suffix">
-                                                    <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
-                                                    <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
-                                                        <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
-                                                    </template>
-                                                </div>
+                                                <template is="dom-if" if="[[!searchPatInput.length]]">
+                                                    <div class="suffix" slot="suffix">
+                                                        <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
+                                                        <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
+                                                            <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
+                                                        </template>
+                                                    </div>
+                                                </template>
                                             </template>
                                         </paper-input>
-                                        <paper-icon-button class="search-patients close" icon="vaadin:close" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"></paper-icon-button>
+                                        <paper-icon-button id="cross-search" class="search-patients close" icon="vaadin:close" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"></paper-icon-button>
+                                        <paper-tooltip for="cross-search" position="left">
+                                            <template is="dom-if" if="[[searchPatInput.length]]">
+                                                [[localize('erase','Erase',language)]]
+                                            </template>
+                                            <template is="dom-if" if="[[!searchPatInput.length]]">
+                                                [[localize('clo','Close',language)]]
+                                            </template>
+                                        </paper-tooltip>
                                     </template>
                                 </div>
                                 <div class="scrollbox patlist">
@@ -1205,7 +1226,7 @@
                                     <!--</template>-->
                                     <template is="dom-if" if="[[suggestedPatientsList.length]]">
                                         <template is="dom-repeat" items="[[suggestedPatientsList]]">
-                                            <paper-checkbox class="checkbox-item" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[item.dateOfBirth]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
+                                            <paper-checkbox class$="checkbox-item checked-[[_isChecked(item.id,targetPats)]]" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[_formatDate(item.dateOfBirth)]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
                                         </template>
                                     </template>
                                     <template is="dom-if" if="[[!suggestedPatientsList.length]]">
@@ -1753,6 +1774,14 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             .catch(() => document)
     }
 
+    _formatDate(date) {
+	    if (date) {
+	        return this.api && this.api.moment && this.api.moment(date).format('DD/MM/YYYY') || this.localize('no_bd','No birthdate',this.language)
+        } else {
+	        return this.localize('no_bd','No birthdate',this.language)
+        }
+    }
+
     _updateSuggestions() {
         console.log('_updateSuggestions')
         if (this.selectedProtocol > 0) {
@@ -1777,6 +1806,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     })
                 })
         }
+    }
+
+    _isChecked(id) {
+	    return id && this.targetPats.filter(p=>p.id===id).length ? true : false
     }
 
     _getPatsFromCheckbox(e) {

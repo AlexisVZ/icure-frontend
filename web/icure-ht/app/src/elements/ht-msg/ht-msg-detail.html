@@ -823,13 +823,22 @@
             .scrollbox.laboInfo {
                 margin-right: 8px; /* TODO : 8px when labresult done*/
             }
-            .scrollbox.patlist .checkbox-item {
+            .scrollbox.patlist .checkbox-item,
+            .scrollbox.patlist  .list-item {
                 border-bottom: 1px solid var(--app-background-color-darker);
                 padding: 4px;
+                cursor: pointer;
+                user-select: none;
             }
-            .scrollbox.patlist .checkbox-item.checked-true {
-                background-color: var(--app-secondary-color);
+            .scrollbox.patlist .list-item:hover {
+                background: var(--app-background-color-darker);
+                border-color: var(--app-background-color-darker);
+            }
+            .scrollbox.patlist .checkbox-item.checked-true,
+            .scrollbox.patlist .list-item.selected-true {
+                background-color: var(--app-secondary-color-dark);
                 border-color: var(--app-secondary-color-dark);
+                color: white;
             }
 
             #import-suggest .line {
@@ -1026,8 +1035,9 @@
                     height: calc(100vh - 84px); /* 84px = topbar and bottombar */
                 }
 
-                .scrollbox.patlist .checkbox-item {
-                    padding: 4px 32px;
+                .scrollbox.patlist .checkbox-item,
+                .scrollbox.patlist .list-item {
+                    padding: 4px 40px;
                 }
 
                 .read-txt {
@@ -1062,7 +1072,7 @@
                     <div class="buttons">
                         <template is="dom-if" if="[[ehealthSession]]">
                             <template is="dom-if" if="[[!isSentbox]]">
-                                <paper-button class="msg-detail-btn" on-tap="_replyMsgs" msgId$='[[msg.id]]'><iron-icon id="reply-msg" icon="reply"></iron-icon>
+                                <paper-button id="reply-msg" class="msg-detail-btn" on-tap="_replyMsgs" msgId$='[[msg.id]]'><iron-icon icon="reply"></iron-icon>
                                     <span class="nomobile-wide">[[localize('reply','Reply',language)]]</span>
                                 </paper-button>
                                 <paper-tooltip class="wide-only" for="reply-msg" position="right">[[localize('reply','Reply',language)]]</paper-tooltip>
@@ -1073,14 +1083,14 @@
                             <!--</paper-button>-->
                         </template>
                         <template is="dom-if" if="[[isHidden]]">
-                            <paper-button class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon id="visibility-msg" icon="visibility"></iron-icon>
+                            <paper-button id="visibility-msg" class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon icon="visibility"></iron-icon>
                                 <span class="nomobile-wide">[[localize('restore','Restore',language)]]</span>
                             </paper-button>
                             <paper-tooltip class="wide-only" for="visibility-msg" position="right">[[localize('restore','Restore',language)]]</paper-tooltip>
                         </template>
                         <template is="dom-if" if="[[!isHidden]]">
                             <template is="dom-if" if="[[!isDeleted]]">
-                                <paper-button class="msg-detail-btn" on-tap="_hideMsg"><iron-icon id="visibility-off-msg" icon="visibility-off"></iron-icon>
+                                <paper-button id="visibility-off-msg" class="msg-detail-btn" on-tap="_hideMsg"><iron-icon icon="visibility-off"></iron-icon>
                                     <span class="nomobile-wide">[[localize('hid_msg','Hide message',language)]]</span>
                                 </paper-button>
                                 <paper-tooltip class="wide-only" for="visibility-off-msg" position="right">[[localize('hid_msg','Hide message',language)]]</paper-tooltip>
@@ -1088,7 +1098,7 @@
                         </template>
                         <div class="del-button">
                             <template is="dom-if" if="[[isDeleted]]">
-                                <paper-button class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon id="undo-msg" icon="undo"></iron-icon>
+                                <paper-button id="undo-msg" class="msg-detail-btn" on-tap="_restoreMsgs"><iron-icon icon="undo"></iron-icon>
                                     <span class="nomobile-wide">[[localize('restore','Restore',language)]]</span>
                                 </paper-button>
                                 <paper-tooltip class="wide-only" for="undo-msg" position="right">[[localize('restore','Restore',language)]]</paper-tooltip>
@@ -1096,7 +1106,7 @@
                             </template>
                             <template is="dom-if" if="[[!isDeleted]]">
                                     <!--<paper-button class="msg-detail-btn" on-tap="_hideMsg"  msgId$='[[msg.id]]' ><iron-icon icon="visibility-off"></iron-icon>[[localize('del','Delete',language)]]</paper-button>-->
-                                <paper-button class="msg-detail-btn" on-tap="_msgToBin"  msgId$='[[msg.id]]' ><iron-icon id="delete-msg" icon="delete"></iron-icon>
+                                <paper-button id="delete-msg" class="msg-detail-btn" on-tap="_msgToBin"  msgId$='[[msg.id]]' ><iron-icon icon="delete"></iron-icon>
                                     <span class="nomobile-wide">[[localize('del','Delete',language)]]</span>
                                 </paper-button>
                                 <paper-tooltip class="wide-only" for="delete-msg" position="right">[[localize('del','Delete',language)]]</paper-tooltip>
@@ -1203,7 +1213,9 @@
                                                     <div class="suffix" slot="suffix">
                                                         <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
                                                         <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
-                                                            <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
+                                                            <template is="dom-if" if="[[item.length]]">
+                                                                <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
+                                                            </template>
                                                         </template>
                                                     </div>
                                                 </template>
@@ -1226,7 +1238,8 @@
                                     <!--</template>-->
                                     <template is="dom-if" if="[[suggestedPatientsList.length]]">
                                         <template is="dom-repeat" items="[[suggestedPatientsList]]">
-                                            <paper-checkbox class$="checkbox-item checked-[[_isChecked(item.id,targetPats)]]" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[_formatDate(item.dateOfBirth)]]<br/>SSIN: [[item.ssin]]</paper-checkbox>
+                                            <div class$="list-item selected-[[_isEqualTo(item.id,selectedPat.id)]]" on-tap="_selectPat" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[_formatDate(item.dateOfBirth)]]<br/>SSIN: [[item.ssin]]</div>
+                                            <!--<paper-checkbox class$="checkbox-item checked-[[_isChecked(item.id,targetPats)]]" on-iron-change="_getPatsFromCheckbox" data-item$="[[item]]"><b>[[item.lastName]] [[item.firstName]]</b><br/>[[localize('dat_of_bir','Date of birth',language)]]: [[_formatDate(item.dateOfBirth)]]<br/>SSIN: [[item.ssin]]</paper-checkbox>-->
                                         </template>
                                     </template>
                                     <template is="dom-if" if="[[!suggestedPatientsList.length]]">
@@ -1422,6 +1435,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             customAssignDate: {
 			    type: String,
                 value: ''
+            },
+            selectedPat: {
+			    type: Object,
+                value: {id:''}
             }
 		};
 	}
@@ -1492,8 +1509,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 if(this.searchNameInputOpened) {
                     // this.root.getElementById('searchPatientsField').inputElement.focus()
                 } else {
+                    this.set('selectedPat',{id:''})
                     this.set('suggestedPatientsList',[])
                     this._smartSuggestion()
+                    this.set('canAssign',false)
                 }
             }
         }
@@ -1510,6 +1529,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                     this.set('suggestedPatientsList',pats.rows || [])
                     this.set('isLoadingPatsSuggest',false)
                     this._uncheckBoxes()
+                    this.set('selectedPat',{id:''})
                 })
             },2000)
         } else {
@@ -1519,8 +1539,9 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     _patNameSplit() {
-        const lastName = this.resInfoBeingAssigned.lastName||''
-        const firstName = this.resInfoBeingAssigned.firstName||''
+        this.set('suggestPatSplittedInfos',[])
+        const lastName = this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName && this.resInfoBeingAssigned.lastName.toUpperCase()||''
+        const firstName = this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName && this.resInfoBeingAssigned.firstName.toUpperCase()||''
         const preSplitted = _.replace(_.replace(lastName+(firstName.length ? " "+firstName : ''),"'"," "),"-"," ") // prepare to split
         const splittedName = preSplitted.length ? preSplitted.split(' ') : []
         this.set('suggestPatSplittedInfos',splittedName)
@@ -1536,6 +1557,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, formatedDemandDate, null, null, 100, "asc").then(paginated=>{
                 const patients = paginated.rows || []
                 if (!patients.length) { // no result ?
+                    this.set('searchNameInputOpened',true)
                     this._getPatientsDefaultSuggest() // same as no birthdate
                 } else if (patients.length <= 10) {
                     this.set('suggestedPatientsList',patients)
@@ -1549,6 +1571,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 }
             })
         } else { // NO BIRTHDATE
+            this.set('searchNameInputOpened',true)
             this._getPatientsDefaultSuggest()
         }
     }
@@ -1716,6 +1739,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             this.set('suggestedPatientsList',[])
             this.set('isLoadingPatsSuggest',false)
             this.set('selectedProtocol',0)
+            this.set('selectedPat',{id:''})
             this._uncheckBoxes()
             this._smartSuggestion()
             this._patNameSplit()
@@ -1732,6 +1756,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         this.set('assignModal',false)
         this.set('selectName','')
         this.set('selectedProtocol',-1)
+        this.set('selectedPat',{id:''})
     }
 
     _getAssignedPats(m) {
@@ -1802,6 +1827,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                             pat.dateOfBirth = this.api.moment(pat.dateOfBirth).format('DD/MM/YYYY')
                             this.push('toImportPatsSuggestions', pat)
                             this._uncheckBoxes()
+                            this.set('selectedPat',{id:''})
                         }
                     })
                 })
@@ -1810,6 +1836,17 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 
     _isChecked(id) {
 	    return id && this.targetPats.filter(p=>p.id===id).length ? true : false
+    }
+
+    _selectPat(e) {
+        const elem = e && e.target && e.target.dataset && e.target.dataset.item ? JSON.parse(e.target.dataset.item) : {}
+        if (this.selectedPat.id !== elem.id) {
+            this.set('selectedPat',elem)
+            this.set('canAssign', true)
+        } else {
+            this.set('selectedPat',{id:''})
+            this.set('canAssign', false)
+        }
     }
 
     _getPatsFromCheckbox(e) {
@@ -1826,10 +1863,10 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         // console.log('_getPatsFromCheckbox',elem,'checked:'+checked,arr)
     }
 
-    _assignResultToSelected(patients,message,resInfo,document) {
+    _assignResultToSelected(patient,message,resInfo,document) {
         if (resInfo && resInfo.formatedDemandDate) delete resInfo.formatedDemandDate
-        if (patients && resInfo && message && document) {
-            patients.map(thisPat=>{
+        if (patient && resInfo && message && document) {
+                const thisPat = patient
                 // console.log('_assignResultToSelected',selMsg, targets, docInfo, document,thisPat)
                 this.api.contact().newInstance(this.user, thisPat, {
                     created: new Date().getTime(),
@@ -1891,43 +1928,41 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 .catch(err => {
                     console.warn("error:" + err)
                 })
-            }) // map end
         } else {
-            console.warn('_assignResultToSelected missing attribute',patients,message,resInfo)
+            console.warn('_assignResultToSelected missing attribute',patient,message,resInfo)
         }
     }
 
     _assignToPat() {
         if (this.selectedMessage && this.thisMsg && this.selectedDocuments &&
             this.resInfoBeingAssigned && this.resInfoBeingAssigned.labo && this.resInfoBeingAssigned.protocol &&
-            this.targetPats && this.targetPats.length) { // if has unassignd results && docinfo && targetPats
-            const patients = this.targetPats || []
+            this.selectedPat !== {id:''}) { // if has unassignd results && docinfo && selectedPat
+            const patients = this.selectedPat
             const message = this.thisMsg || null
             const resInfo = this.resInfoBeingAssigned || null
             const document = this.documentBeingAssigned
             this._assignResultToSelected(patients,message,resInfo,document)
         } else {
             // console.log("assignToPat",this.targetPats)
-            if (this.targetPats && this.targetPats.length) { // if no unassigned && no docinfo && no targetPats
-                this.targetPats.map(thisPat=>{
-                    this.api.contact().newInstance(this.user, thisPat, {
-                        created: new Date().getTime() ,
-                        modified: new Date().getTime() ,
-                        author: this.user.id,
-                        responsible: this.user.healthcarePartyId,
-                        subContacts: []
-                    }).then(ctc=>{
-                        const doc = this.selectedDocuments.find(d=>d.documentLocation === 'annex')
-                        if (doc && doc.id && doc.id.length) {
-                            const svc = this.api.contact().service().newInstance(this.user, { content: _.fromPairs([[this.language, { documentId: doc.id, stringValue: doc.name || 'annex-'+this.api.moment(Date.now()).format('YYYYMMDD') }]]), label: 'document' });
-                            ctc.services.push(svc);
-                            ctc.subContacts = [{ status: 64, services: [{serviceId: svc.id }]}]
-                            this.api.contact().createContactWithUser(this.user, ctc).then(c=>{
-                                this.api.register(c,'contact')
-                                this.closeSuggestions()
-                            })
-                        }
-                    })
+            if (this.selectedPat !== {id:''}) {
+                const thisPat = this.selectedPat
+                this.api.contact().newInstance(this.user, thisPat, {
+                    created: new Date().getTime() ,
+                    modified: new Date().getTime() ,
+                    author: this.user.id,
+                    responsible: this.user.healthcarePartyId,
+                    subContacts: []
+                }).then(ctc=>{
+                    const doc = this.selectedDocuments.find(d=>d.documentLocation === 'annex')
+                    if (doc && doc.id && doc.id.length) {
+                        const svc = this.api.contact().service().newInstance(this.user, { content: _.fromPairs([[this.language, { documentId: doc.id, stringValue: doc.name || 'annex-'+this.api.moment(Date.now()).format('YYYYMMDD') }]]), label: 'document' });
+                        ctc.services.push(svc);
+                        ctc.subContacts = [{ status: 64, services: [{serviceId: svc.id }]}]
+                        this.api.contact().createContactWithUser(this.user, ctc).then(c=>{
+                            this.api.register(c,'contact')
+                            this.closeSuggestions()
+                        })
+                    }
                 })
             }
         } // else end
@@ -2072,8 +2107,8 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	    this.set('isSentbox',msg && msg.transportGuid && msg.transportGuid.startsWith('SENT'))
     }
 
-	_isEqualTo(title, string) {
-		return title == string;
+	_isEqualTo(a, b) {
+		return a === b;
 	}
 
 	_timeFormat(date) {

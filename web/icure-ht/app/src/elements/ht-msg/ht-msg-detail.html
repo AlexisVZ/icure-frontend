@@ -1485,7 +1485,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
             console.log('updatePatSearch',this.searchPatInput)
             setTimeout(() =>{
                 this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, this.searchPatInput, null, null, 100, "asc").then(pats=>{
-                    console.log('pats',pats)
+                    // console.log('pats',pats)
                     this.set('suggestedPatientsList',pats.rows || [])
                     this.set('isLoadingPatsSuggest',false)
                     this._uncheckBoxes()
@@ -1546,6 +1546,9 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         })) // promiseArray map end of promise
             .then(()=>{
                 const patients = [...new Set(patsToDisplay)] // remove duplicates
+                if (!patients.length) {
+                    this.set('searchNameInputOpened',true)
+                }
                 if (patients.length <= 10) {
                     this.set('suggestedPatientsList',patients)
                     this.set('isLoadingPatsSuggest',false)
@@ -1561,7 +1564,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
     }
 
     _smartPatientsFilter(patients,accuracy) {
-	    const suggestedPatientsList = patients && patients.length ? patients : this.suggestedPatientsList
+	    const suggestedPatientsList = patients && patients.length ? patients : this.suggestedPatientsList.length ? this.suggestedPatientsList : []
         const smartSuggestionAccuracy = accuracy || 3
 	    /* tolerance  :
 	        1 = XXXX&&first // firstName match
@@ -1569,6 +1572,9 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	        3 = last&&first // both lastName and firstName
 	        4 = last||first // lastName or firstName
         */
+	    if (!suggestedPatientsList.length) {
+            this.set('searchNameInputOpened',true)
+        }
         if (suggestedPatientsList.length <= 10) {
             return suggestedPatientsList
         }
@@ -1673,8 +1679,8 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
 	}
 
     openSuggestions(e) {
-	    const resInfo = e.detail.resInfo || {}
-	    const documentBeingAssigned = e.detail.documentBeingAssigned || {}
+	    const resInfo = e && e.detail && e.detail.resInfo || {}
+	    const documentBeingAssigned = e && e.detail && e.detail.documentBeingAssigned || {}
         // console.log('res',resInfo)
         if(!this.assignModal) {
             this.set('documentBeingAssigned',documentBeingAssigned)
@@ -1902,7 +1908,7 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         if(inss && inss.length > 1) {
             this.api.patient().findByNameBirthSsinAutoWithUser(this.user,this.user.healthcarePartyId, inss, null, null, 100, "asc")
                 .then(patients => {
-                    console.log(patients);
+                    // console.log(patients);
                     const newPat = patients.rows[0]
                     return `${newPat.firstName} ${newPat.lastName} (INSS:${newPat.ssin})`;
                 })

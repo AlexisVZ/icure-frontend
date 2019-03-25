@@ -939,6 +939,10 @@
                 flex-grow: 1;
                 height: 80px;
                 margin: 0 8px;
+                display: none;
+            }
+            paper-input.search-patients.visible-true {
+                display: initial;
             }
             .search-patients .suffix {
                 font-size: .7em;
@@ -1199,28 +1203,28 @@
                                     <template is="dom-if" if="[[!searchNameInputOpened]]">
                                         <paper-button class="search-patients manual" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"><iron-icon icon="perm-identity"></iron-icon>[[localize('sch_pats_man','search patients manually',language)]]</paper-button>
                                     </template>
-                                    <template is="dom-if" if="[[searchNameInputOpened]]">
-                                        <!--<paper-dropdown-menu>-->
-                                            <!--<paper-listbox slot="dropdown-content" selected="{{smartSuggestionAccuracy}}">-->
-                                                <!--<paper-item id="0">[[localize('accur_low','Low accuracy',language)]]</paper-item>-->
-                                                <!--<paper-item id="1">[[localize('accur_mid','Middle accuracy',language)]]</paper-item>-->
-                                                <!--<paper-item id="2">[[localize('accur_hih','High accuracy',language)]]</paper-item>-->
-                                            <!--</paper-listbox>-->
-                                        <!--</paper-dropdown-menu>-->
-                                        <paper-input id="searchPatientsField" class="search-patients" value="{{searchPatInput}}" label="[[localize('sch_pats_man','search patients manually',language)]]">
-                                            <template is="dom-if" if="[[suggestPatSplittedInfos.length]]">
-                                                <template is="dom-if" if="[[!searchPatInput.length]]">
-                                                    <div class="suffix" slot="suffix">
-                                                        <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
-                                                        <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
-                                                            <template is="dom-if" if="[[item.length]]">
-                                                                <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
-                                                            </template>
+                                    <!--<paper-dropdown-menu>-->
+                                        <!--<paper-listbox slot="dropdown-content" selected="{{smartSuggestionAccuracy}}">-->
+                                            <!--<paper-item id="0">[[localize('accur_low','Low accuracy',language)]]</paper-item>-->
+                                            <!--<paper-item id="1">[[localize('accur_mid','Middle accuracy',language)]]</paper-item>-->
+                                            <!--<paper-item id="2">[[localize('accur_hih','High accuracy',language)]]</paper-item>-->
+                                        <!--</paper-listbox>-->
+                                    <!--</paper-dropdown-menu>-->
+                                    <paper-input id="searchPatientsField" class$="search-patients visible-[[searchNameInputOpened]]" value="{{searchPatInput}}" label="[[localize('sch_pats_man','search patients manually',language)]]">
+                                        <template is="dom-if" if="[[suggestPatSplittedInfos.length]]">
+                                            <template is="dom-if" if="[[!searchPatInput.length]]">
+                                                <div class="suffix" slot="suffix">
+                                                    <span>[[localize('fast_sch','Fast search',language)]]&nbsp;:&nbsp;</span>
+                                                    <template is="dom-repeat" items="[[suggestPatSplittedInfos]]">
+                                                        <template is="dom-if" if="[[item.length]]">
+                                                            <paper-button class="tag" on-tap="_fillInputSearch" value="[[item]]">[[item]]</paper-button>
                                                         </template>
-                                                    </div>
-                                                </template>
+                                                    </template>
+                                                </div>
                                             </template>
-                                        </paper-input>
+                                        </template>
+                                    </paper-input>
+                                    <template is="dom-if" if="[[searchNameInputOpened]]">
                                         <paper-icon-button id="cross-search" class="search-patients close" icon="vaadin:close" on-tap="toggleSearchNameInputOpened" disabled="[[isLoadingPatsSuggest]]"></paper-icon-button>
                                         <paper-tooltip for="cross-search" position="left">
                                             <template is="dom-if" if="[[searchPatInput.length]]">
@@ -1497,17 +1501,24 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         }
     }
 
+    _searchFieldFocus() {
+	    const input = this.root.getElementById('searchPatientsField') && this.root.getElementById('searchPatientsField').inputElement && this.root.getElementById('searchPatientsField').inputElement.inputElement
+        if (input) {
+            input.focus()
+        }
+    }
+
     toggleSearchNameInputOpened() { //
 	    if (!this.isLoadingPatsSuggest) {
 	        if (this.searchPatInput.length) {
 	            this.set('searchPatInput','')
-                // this.root.getElementById('searchPatientsField').inputElement.focus()
+                this._searchFieldFocus()
             } else {
                 this.set('searchPatInput','')
                 this.set('searchNameInputOpened',!this.searchNameInputOpened)
                 this.set('filterAccuracy',null)
                 if(this.searchNameInputOpened) {
-                    // this.root.getElementById('searchPatientsField').inputElement.focus()
+                    this._searchFieldFocus()
                 } else {
                     this.set('selectedPat',{id:''})
                     this.set('suggestedPatientsList',[])
@@ -1602,6 +1613,9 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
                 }
                 if (patients.length > 20) {
                     this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
+                }
+                if(this.searchNameInputOpened) {
+                    this._searchFieldFocus()
                 }
                 this.set('isLoadingPatsSuggest',false)
             })

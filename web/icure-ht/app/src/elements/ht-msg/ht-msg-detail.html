@@ -1558,83 +1558,49 @@ class HtMsgDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
         this.set('searchNameInputOpened',false)
         this.set('suggestedPatientsList',[])
         if (this.resInfoBeingAssigned && this.resInfoBeingAssigned.dateOfBirth) { // WITH BIRTHDATE
-            const formatedDemandDate = this.api.moment(this.resInfoBeingAssigned.dateOfBirth).format('DD/MM/YYYY')
-            this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, formatedDemandDate, null, null, 100, "asc").then(paginated=>{
+            const formatedBirthDate = this.api.moment(this.resInfoBeingAssigned.dateOfBirth).format('DD/MM/YYYY')
+            this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, formatedBirthDate, null, null, 100, "asc").then(paginated=>{
                 const patients = paginated.rows || []
                 if (!patients.length) { // no result ?
-                    this._defaultSuggestion() // same as no birthdate
+                    this._suggestByLastName() // same as no birthdate
                 } else if (patients.length <= 10) {
                     this.set('suggestedPatientsList',patients)
                     this.set('isLoadingPatsSuggest',false)
-                } else if (patients.length > 10 && patients.length <= 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,3)) // LASTNAME && FIRSTNAME
-                    this.set('isLoadingPatsSuggest',false)
-                } else if (patients.length > 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
+                } else {
+                    this.set('suggestedPatientsList', this._addLastNameToFilter(patients))
                     this.set('isLoadingPatsSuggest',false)
                 }
             })
         } else { // NO BIRTHDATE
-            this._defaultSuggestion()
+            this._suggestByLastName()
         }
     }
 
-    _defaultSuggestion() {
+    _addLastNameToFilter(patients) {
+        const resLastName = (this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName||'').toUpperCase()
+	    const list = patients.filter(p=>p.lastName.toUpperCase() === resLastName) // TODO : add levenshtein on this filter
+        if (!list.length) {
+            return patients
+        } else {
+            return list
+        }
+    }
+
+    _suggestByLastName() {
         let patsToDisplay = []
-        const promiseArray = this._patNameSplit()
-        Promise.all(promiseArray.map(string=>{
-            if (string.length) {
-                return this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, string, null, null, 100, "asc").then(paginated=>{
-                    paginated.rows.map(p=> {
-                        if (!patsToDisplay.includes(p)) patsToDisplay.push(p)
-                    })
-                })
-            } else return
-        })) // promiseArray map end of promise
-            .then(()=>{
-                const patients = [...new Set(patsToDisplay)] // remove duplicates
-                if (patients.length <= 10) {
-                    this.set('suggestedPatientsList',patients)
+        const lastName = this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName && this.resInfoBeingAssigned.lastName.toUpperCase()||''
+        if (lastName.length) {
+            this.api.patient().findByNameBirthSsinAutoWithUser(this.user, this.user.healthcarePartyId, lastName, null, null, 100, "asc").then(paginated=>{
+                Promise.all(paginated.rows.map(p=> {
+                    if (!patsToDisplay.includes(p)) patsToDisplay.push(p)
+                })).then(()=>{
+                    this.set('suggestedPatientsList',patsToDisplay)
                     this.set('isLoadingPatsSuggest',false)
-                }
-                if (patients.length > 10 && patients.length <= 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,4)) // LASTNAME || FIRSTNAME
-                }
-                if (patients.length > 20) {
-                    this.set('suggestedPatientsList', this._smartPatientsFilter(patients,2)) // only LASTNAME
-                }
-                this.set('isLoadingPatsSuggest',false)
+                })
             })
-    }
-
-    _smartPatientsFilter(patients,accuracy) {
-	    const suggestedPatientsList = patients || []
-        const smartSuggestionAccuracy = accuracy || 3
-	    /* tolerance  :
-	        1 = XXXX&&first // firstName match
-	        2 = last&&XXXXX // lastName match
-	        3 = last&&first // both lastName and firstName
-	        4 = last||first // lastName or firstName
-        */
-        if (suggestedPatientsList.length <= 10) {
-            return suggestedPatientsList
-        }
-        const smartResInfo = {
-            search: ((this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName+" "||'')+(this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName||'')).toUpperCase(),
-            lastName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.lastName+" "||'').toUpperCase(),
-            firstName: (this.resInfoBeingAssigned && this.resInfoBeingAssigned.firstName+" "||'').toUpperCase()
-        }
-        if (smartSuggestionAccuracy <= 1) {
-            return suggestedPatientsList.filter(p=>p.firstName.toUpperCase().includes(smartResInfo.firstName))
-        }
-        if (smartSuggestionAccuracy == 2) {
-            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName))
-        }
-        if (smartSuggestionAccuracy == 3) {
-            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) && p.firstName.toUpperCase().includes(smartResInfo.firstName))
-        }
-        if (smartSuggestionAccuracy >= 4) {
-            return suggestedPatientsList.filter(p=>p.lastName.toUpperCase().includes(smartResInfo.lastName) || p.firstName.toUpperCase().includes(smartResInfo.firstName))
+        } else {
+            this.set('suggestedPatientsList',[])
+            this.set('isLoadingPatsSuggest',false)
         }
     }
 

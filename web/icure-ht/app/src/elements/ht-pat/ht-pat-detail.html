@@ -1966,7 +1966,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
                 <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]"
                                                 api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]"
-                                                on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-prescribe="_prescribe" on-invoice="_invoice" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact" on-medications-selection="_selectMultiMedication" on-medication-selection="_selectMedication"
+                                                on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-prescribe="_prescribe" on-invoice="_invoice" on-add-other="addOther" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact" on-medications-selection="_selectMultiMedication" on-medication-selection="_selectMedication"
                                                 on-medication-detail="_medicationDetail" on-medications-detail="_medicationsDetail" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged"></ht-pat-detail-ctc-detail-panel>
                 </vaadin-split-layout>
             </template>
@@ -2330,6 +2330,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <ht-pat-edmg-dialog id="edmgDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-edmg-dialog>
         <!--<ht-pat-hub-transaction-view id="transactionViewDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-hub-transaction-view>-->
         <ht-pat-hub-dialog id="patHubDialog" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" i18n="[[i18n]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-hub-dialog>
+
+        <entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></entity-selector>
 
     </template>
     <script>
@@ -2719,6 +2721,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     .then(ct =>this.set("contactTypeList", _.orderBy(ct.rows, ['code'], ['asc'])))
 
                 this._setColsWidth()
+            }
+
+            addOther() {
+                this.$['add-form-dialog'].open();
+            }
+            _addedFormSelected(e, formTemplate) {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                formTemplate && ctcDetailPanel && ctcDetailPanel.addForm(e.detail.guid);
+            }
+            formTemplatesSelectorColumns() {
+                return [{ key: 'group.name', title: 'Groupe' }, { key: 'name', title: 'Nom' }, { key: 'guid', title: 'GUID' }];
+            }
+            formTemplatesSelectorDataProvider() {
+                return {
+                    filter: function (filterValue, limit, offset, sortKey, descending) {
+                        const regExp = filterValue && new RegExp(filterValue, "i");
+
+                        const all = this.allTemplates || (this.allTemplates = Promise.all([
+                            this.api.form().findFormTemplates(),
+                            this.api.form().findFormTemplatesBySpeciality(((this.api.hcParties[this.user.healthcarePartyId]||{}).specialityCodes||[])[0] || 'deptgeneralpractice')
+                        ]).then( res => _.chain(res[0].concat(res[1])).uniqBy(x=>x.id).sortBy(['group','name']).value()))
+
+                        return all
+                            .then(fts => {
+                                const filtered = fts.filter(ft => (!regExp || ft.name && ft.name.match(regExp) || ft.group && ft.group.name && ft.group.name.match(regExp) || ft.guid && ft.guid.match(regExp)) && ft.disabled !== "true");
+                                return { totalSize: filtered.length, rows: (descending ? _.reverse(_.sortBy(filtered, sortKey)) : _.sortBy(filtered, sortKey)).slice(0, limit) };
+                            });
+                    }.bind(this)
+                };
             }
 
             _colSizeChanged() {

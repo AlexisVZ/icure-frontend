@@ -708,7 +708,7 @@
 		</div>
 
 		<entity-selector id="load-template-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[reportTemplatesSelectorColumns()]]" data-provider="[[reportCustomTemplatesSelectorDataProvider()]]" entity-icon="vaadin:doctor" entity-type="[[localize('template','Template',language)]]" on-entity-selected="_reportTemplateSelected"></entity-selector>
-		<entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></entity-selector>
+		<!--<entity-selector id="add-form-dialog" i18n="[[i18n]]" language="[[language]]" resources="[[resources]]" columns="[[formTemplatesSelectorColumns()]]" data-provider="[[formTemplatesSelectorDataProvider()]]" on-entity-selected="_addedFormSelected"></entity-selector>-->
 
 		<paper-dialog id="upload-dialog">
 			<h2>[[localize('upl_fil','Upload files',language)]]<span class="extra-info">(PDF, images and videos)</span></h2>
@@ -1195,7 +1195,8 @@
 
 			addOther() {
 				this.set('showAddFormsContainer', false);
-				this.$['add-form-dialog'].open();
+				// this.$['add-form-dialog'].open();
+                this.dispatchEvent(new CustomEvent("add-other", {composed: true, bubbles: true}))
 			}
 
 			addDocument() {

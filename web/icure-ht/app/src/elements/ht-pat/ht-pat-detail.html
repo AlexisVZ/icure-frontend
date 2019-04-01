@@ -2761,6 +2761,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     _drugsRefresher: {
                         type: Number,
                         value: 0
+                    },
+                    servicesMap: {
+                        type: Object,
+                        value: null
+                    },
+                    globalHcp: {
+                        type: Object,
+                        value: null
                     }
                 };
             }
@@ -3600,10 +3608,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const svcMap = e && e.detail && e.detail.servicesMap
                 const globHcp = e && e.detail && e.detail.globalHcp
                 if (currCtc && svcMap && globHcp) {
-                    this.set('currentContact',currCtc)
-                    this.set('servicesMap',svcMap)
-                    this.set('globalHcp',globHcp)
-                    this.$.prescriptionDialog.open();
+                    const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                    if (ctcDetailPanel) {
+                        ctcDetailPanel._allContactsChanged()
+                        this.set('currentContact',currCtc)
+                        this.set('servicesMap',svcMap)
+                        this.set('globalHcp',globHcp)
+                        this.$.prescriptionDialog.open();
+                    }
                 }
             }
             _handleSaveDocumentAsService() {

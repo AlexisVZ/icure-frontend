@@ -3615,8 +3615,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 if (ctcDetailPanel) ctcDetailPanel._handlePdfReport()
             }
 
-            _invoice() {
-                this.$.invoicingForm.open();
+            _invoice(e) {
+                const currCtc = e && e.detail && e.detail.currentContact
+                if (currCtc) {
+                    this.set('currentContact',currCtc)
+                    this.$.invoicingForm.open();
+                }
             }
 
             _createService(e) {

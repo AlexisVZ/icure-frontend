@@ -1146,7 +1146,7 @@
 			}
 
 			_invoicing(){
-                this.dispatchEvent(new CustomEvent("invoice", {composed: true, bubbles: true}))
+                this.dispatchEvent(new CustomEvent("invoice", {detail:{currentContact:this.currentContact},composed: true, bubbles: true}))
 			}
 
 			_ch4(){

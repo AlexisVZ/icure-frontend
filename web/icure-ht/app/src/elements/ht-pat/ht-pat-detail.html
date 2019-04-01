@@ -2757,6 +2757,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     linkingLetterDpData :{
                         type: Object,
                         value: {}
+                    },
+                    _drugsRefresher: {
+                        type: Number,
+                        value: 0
                     }
                 };
             }
@@ -3591,8 +3595,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.$.planActionForm.open(svc)
             }
 
-            _prescribe(){
-                this.$.prescriptionDialog.open();
+            _prescribe(e){
+                const currCtc = e && e.detail && e.detail.currentContact
+                const svcMap = e && e.detail && e.detail.servicesMap
+                const globHcp = e && e.detail && e.detail.globalHcp
+                if (currCtc && svcMap && globHcp) {
+                    this.set('currentContact',currCtc)
+                    this.set('servicesMap',svcMap)
+                    this.set('globalHcp',globHcp)
+                    this.$.prescriptionDialog.open();
+                }
+            }
+            _handleSaveDocumentAsService() {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                if (ctcDetailPanel) ctcDetailPanel._handleSaveDocumentAsService()
+            }
+            _handlePdfReport() {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                if (ctcDetailPanel) ctcDetailPanel._handlePdfReport()
             }
 
             _invoice() {

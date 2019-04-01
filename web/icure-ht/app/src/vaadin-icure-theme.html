@@ -175,3 +175,32 @@
         </style>
     </template>
 </dom-module>
+
+<dom-module id="vaadin-split-layout-style" theme-for="vaadin-split-layout">
+    <template>
+        <style>
+            :host [part=splitter]{
+                background-color: var(--app-background-color);
+                position: relative;
+                min-width: 0;
+                width: 0;
+                z-index: 990;
+            }
+
+            :host [part=handle]{
+                opacity: 0;
+                height: 100%;
+                cursor: col-resize;
+                left: 2px;
+                max-width: 4px;
+            }
+            :host [part=handle]:hover,
+            :host [part=handle]:active{
+                opacity: 0.4;
+            }
+            :host [part=handle]:active {
+                background: var(--app-primary-color);
+            }
+        </style>
+    </template>
+</dom-module>

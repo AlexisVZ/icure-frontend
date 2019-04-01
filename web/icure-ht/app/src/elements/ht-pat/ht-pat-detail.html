@@ -1006,6 +1006,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 border-top: 0;
             }
 
+            #prose-editor-linking-letter {
+                margin: 0;
+                padding: 0;
+                min-height: 0;
+                overflow-y: hidden;
+                background: var(--app-background-color);
+            }
+            #prose-editor-dialog-linking-letter .buttons {
+                position: initial;
+            }
+
             @media screen and (max-width: 1168px) {
                 .patient-info-container{
                     padding: 0;
@@ -1996,7 +2007,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
                 <ht-pat-detail-ctc-detail-panel id="ctcDetailPanel" contacts="[[selectedContacts]]" all-contacts="[[contacts]]" health-elements="[[healthElements]]" main-health-elements="[[_concat(activeHealthElements, allergies, risks, inactiveHealthElements, familyrisks)]]"
                                                 api="[[api]]" i18n="[[i18n]]" user="[[user]]" patient="[[patient]]" language="[[language]]" resources="[[resources]]" current-contact="[[currentContact]]" medications="[[medications]]" hidden-sub-contacts-id="[[hiddenSubContactsId]]"
-                                                on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-prescribe="_prescribe" on-invoice="_invoice" on-add-other="addOther" on-add-document="addDocument" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact" on-medications-selection="_selectMultiMedication" on-medication-selection="_selectMedication"
+                                                on-select-current-contact="_selectCurrentContact" on-plan-action="_planAction" on-prescribe="_prescribe" on-invoice="_invoice" on-add-other="addOther" on-add-document="addDocument" on-write-linking-letter="writeLinkingLetter" on-close-contact="_closeContact" on-change="formsChanged" on-must-save-contact="_saveContact" on-medications-selection="_selectMultiMedication" on-medication-selection="_selectMedication"
                                                 on-medication-detail="_medicationDetail" on-medications-detail="_medicationsDetail" contact-type-list="[[contactTypeList]]" on-contact-saved="contactChanged"></ht-pat-detail-ctc-detail-panel>
                 </vaadin-split-layout>
             </template>
@@ -2372,6 +2383,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
+        <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-outside-click no-cancel-on-esc-key>
+            <h2 class="modal-title">[[localize('linkingLetter','Lettre de liaison',language)]]</h2>
+            <prose-editor id="prose-editor-linking-letter" on-refresh-context="_refreshContextLinkingLetter"></prose-editor>
+            <div class="buttons">
+                <div class="fleft">
+                    <paper-button class="modal-button modal-button--save" on-tap="_printLinkingLetter"><iron-icon icon="icons:print" class="mr5 smallIcon" ></iron-icon> [[localize('print','Print',language)]]</paper-button>
+                </div>
+                <paper-button class="modal-button modal-button--cancel" dialog-dismiss><iron-icon icon="icons:close" class="mr5 smallIcon" ></iron-icon> [[localize('clo','Close',language)]]</paper-button>
+                <paper-button class="modal-button modal-button--save" autofocus on-tap="_saveLinkingLetter"><iron-icon icon="icons:save" class="mr5 smallIcon" ></iron-icon> [[localize('saveToPatFile','Save to patient file',language)]]</paper-button>
+            </div>
+        </paper-dialog>
+
     </template>
     <script>
         import moment from 'moment/src/moment';
@@ -2726,6 +2749,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     files: {
                         type: Array,
                         value: []
+                    },
+                    proseEditorLinkingLetterTemplateAlreadyApplied: {
+                        type: Boolean,
+                        value: false
+                    },
+                    linkingLetterDpData :{
+                        type: Object,
+                        value: {}
                     }
                 };
             }
@@ -2860,6 +2891,53 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     if (ctcDetailPanel) ctcDetailPanel.saveCurrentContact().then(c => ctcDetailPanel._contactsChanged());
                 }
                 console.log(vaadinUpload.files)
+            }
+
+            writeLinkingLetter(e) {
+                this.busySpinner = true;
+
+                this.$['prose-editor-dialog-linking-letter'].open()
+                const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
+                proseEditor.set("additionalCssClasses", "linkingLetter" );
+
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+
+                if (ctcDetailPanel) {
+                    ctcDetailPanel._getPdfPrintingCommonData({})
+                        .then(dpData=>_.assign({dpData:dpData}, {}))
+                        .then(resourceObject => {
+
+                            this.linkingLetterDpData = resourceObject.dpData
+                            if (this.proseEditorLinkingLetterTemplateAlreadyApplied) return;
+
+                            return this.api.doctemplate().findDocumentTemplatesByDocumentType('template')
+                                .then(docTemplates =>_.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter." + this.language ), "[0]", false) || _.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter.fr" ), "[0]", {}))
+                                .then(dt =>{ return (dt && dt.id && dt.attachmentId) ? this.api.doctemplate().getAttachmentText(dt.id, dt.attachmentId).then(proseTemplate =>{
+                                    this.proseEditorLinkingLetterTemplateAlreadyApplied = true;
+                                    proseEditor.setJSONContent(this.api.crypto().utils.ua2utf8(proseTemplate)||{})
+                                }) : {} })
+                                .catch(e=>console.log(e))
+
+                        })
+                        .catch(e=>console.log(e))
+                        .finally(()=> {
+                            ctcDetailPanel._refreshContextLinkingLetter();
+                            ctcDetailPanel._toggleAddActions();
+                            this.busySpinner = false;
+                        })
+                }
+            }
+            _saveLinkingLetter() {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                ctcDetailPanel._saveLinkingLetter()
+            }
+            _printLinkingLetter() {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                ctcDetailPanel._printLinkingLetter()
+            }
+            _refreshContextLinkingLetter() {
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                ctcDetailPanel._refreshContextLinkingLetter()
             }
 
             _colSizeChanged() {

@@ -16,10 +16,11 @@
                 }
 
                 .prose-editor-container{
-                    height: 100%;
+                    height: calc(60vh - 148px);
                     display: flex;
                     flex-flow: column nowrap;
                     justify-content: space-between;
+                    overflow-y: auto;
                 }
 
                 .container {
@@ -219,7 +220,7 @@
                     flex-grow: 1;
                     width: 100%;
                     height: 100%;
-                    overflow: auto;
+                    /*overflow: auto;*/
                     position: relative;
                     background: var(--app-background-color);
                     min-height:calc(100vh - 400px);
@@ -293,7 +294,6 @@
             </style>
         </custom-style>
 
-        <div class="prose-editor-container">
             <div class="toolbar">
                 <paper-icon-button icon="icons:undo" on-tap="doUndo"></paper-icon-button>
                 <paper-icon-button icon="icons:redo" on-tap="doRedo"></paper-icon-button>
@@ -366,6 +366,7 @@
 
                 <paper-input no-label-float class="zoom" type="number" value="{{zoomLevel}}"><div slot="suffix">&nbsp;%</div></paper-input>
             </div>
+        <div class="prose-editor-container">
 
             <div class="scroll-area">
                 <div id="container" class="container">

@@ -719,9 +719,9 @@
             </div>
 		</paper-dialog>
 
-        <ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]] on-save-document-as-service="[[_handleSaveDocumentAsService]]" on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>
+        <!--<ht-pat-prescription-dialog id="prescriptionDialog" api="[[api]]" user="[[user]]" i18n="[[i18n]]" language="[[language]]" patient="[[patient]]" resources="[[resources]]" current-contact="[[currentContact]]" services-map="[[servicesMap]]" drugs-refresher="[[_drugsRefresher]]" global-hcp=[[globalHcp]] on-save-document-as-service="[[_handleSaveDocumentAsService]]" on-pdf-report="_handlePdfReport"></ht-pat-prescription-dialog>-->
 
-		<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>
+		<!--<ht-pat-invoicing-dialog id="invoicingForm" api="[[api]]" user="[[user]]" language="[[language]]" patient="[[patient]]" current-contact="[[currentContact]]" i18n="[[i18n]]" resources="[[resources]]"></ht-pat-invoicing-dialog>-->
 
 		<paper-dialog id="prose-editor-dialog" no-cancel-on-outside-click no-cancel-on-esc-key>
             <paper-item id="templateSavedIndicator">
@@ -1146,7 +1146,7 @@
 			}
 
 			_invoicing(){
-				this.$.invoicingForm.open()
+                this.dispatchEvent(new CustomEvent("invoice", {composed: true, bubbles: true}))
 			}
 
 			_ch4(){
@@ -1237,9 +1237,9 @@
 				return this.api && this.currentContact && this.currentContact.services && this.currentContact.services.filter(s => s.tags.find(t => t.type === 'CD-ITEM' && t.code === 'treatment') && !s.endOfLife && s.tags.find(t => t.type === 'CD-LIFECYCLE' && ['ordered', 'completed', 'delivered'].includes(t.code)) && this.api.contact().medicationValue(s, this.language)) || [];
 			}
 
-			_prescribe(e) {
-				e.stopPropagation();
-				this.$.prescriptionDialog.open();
+            _prescribe(e) {
+                e.stopPropagation();
+                this.dispatchEvent(new CustomEvent("prescribe", {composed: true, bubbles: true}))
             }
 
             _handlePdfReport(e) {

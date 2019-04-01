@@ -356,7 +356,7 @@
                     <div class="date">[[_shortDateFormat(he.openingDate, he.valueDate)]]</div>
                     <div class="date">[[_shortDateFormat(he.closingDate, he.valueDate)]]</div>
                     <div class="btns">
-                        <paper-menu-button>
+                        <paper-menu-button close-on-activate>
                             <paper-icon-button icon="icons:more-vert" slot="dropdown-trigger"></paper-icon-button>
                             <paper-listbox slot="dropdown-content">
                                 <paper-item id="he-edit-btn-edit_[[getHeId(he)]]" on-tap="_toggleEditHE">[[localize('edi','Edit',language)]]</paper-item>

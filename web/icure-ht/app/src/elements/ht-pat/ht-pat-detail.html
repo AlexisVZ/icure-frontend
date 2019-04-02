@@ -3316,7 +3316,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const allContacts = (this.currentContact ? [this.currentContact] : []).concat(this.contacts)
                 Promise.all(hes.map(he => he.id ? Promise.resolve(he) : this.contact().promoteServiceToHealthElement(he))).then(hes =>
                     this.api.contact().promoteServiceInContact(this.currentContact, this.user, allContacts, this.api.contact().service().newInstance(this.user, e.detail.service), null, [], hes.map(he => he.id))
-                ).then(() => this.saveContact(this.currentContact))
+                ).then(() => this.saveContact(this.currentContact).finally(()=>this.refreshPatient()))
             }
 
             _updateServices(e) {
@@ -3326,7 +3326,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const allContacts = (this.currentContact ? [this.currentContact] : []).concat(this.contacts)
                 const services = (e.detail.services || (e.detail.service && [e.detail.service]) || [] )
                 services.forEach(svc => this.api.contact().promoteServiceInContact(this.currentContact, this.user, allContacts, svc, null, {}, [],e.detail.function || undefined))
-                this.saveContact(this.currentContact)
+                this.saveContact(this.currentContact).finally(()=>this.refreshPatient())
             }
 
             saveNewService(svc) {

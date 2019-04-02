@@ -20,6 +20,9 @@
 <link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
 <link rel="import" href="dynamic-link.html">
 
+<link rel="import" href="../../dropdown-style.html">
+<link rel="import" href="../../paper-input-style.html">
+
 <dom-module id="material-text-field-custom" theme-for="vaadin-text-field">
 	<template>
 		<style>
@@ -29,7 +32,7 @@
 			}
 
 			[part="value"] {
-				font-size: var(--form-font-size);
+				font-size: var(--font-size-normal);
 			}
 		</style>
 	</template>
@@ -37,12 +40,13 @@
 
 <dom-module id="dynamic-popup-menu">
 	<template>
-		<style>
+		<style include="dropdown-style paper-input-style">
 			:host {
 				flex-grow: var(--dynamic-field-width, 50);
 				position: relative;
 				min-width: calc(var(--dynamic-field-width-percent, '50%') - 32px);
-				margin: 0 16px;
+				margin: 6px;
+				--paper-font-caption_-_line-height: var(--font-size-normal);
 			}
 
 			dynamic-link {
@@ -77,19 +81,6 @@
 				border-bottom: 1px dotted var(--app-secondary-color-dark);
 			}
 
-			paper-input-container {
-				--paper-input-container-focus-color: var(--app-primary-color);
-				--paper-input-container-label: {
-					color: var(--app-text-color);
-					opacity: 1;
-				};
-				--paper-input-container-underline-disabled: {
-					border-bottom: 1px solid var(--app-text-color);
-
-				};
-				--paper-input-container-color: var(--app-text-color);
-			}
-
 			vaadin-combo-box {
 				width: 100%;
 				font-size: 11px;
@@ -99,15 +90,15 @@
 				padding: 0;
 			}
 
-			paper-listbox {
-			}
-
 			input{
 				border:none;
 				width: calc(100% - 24px);
 				outline: 0;
 				background:none;
-				font-size: var(--form-font-size);
+				font-size: var(--font-size-normal);
+				height: 22px;
+				line-height: var(--font-size-normal);
+				padding: 0;
 			}
 		</style>
 
@@ -122,7 +113,7 @@
 					</template>
 				</label>
 				<iron-input slot="input" bind-value="{{traductValue}}">
-					<input readonly type="text" value="{{traductValue::input}}" on-tap="_openPopupMenu" readonly>
+					<input readonly type="text" value="{{traductValue::input}}" on-tap="_openPopupMenu">
 				</iron-input>
 				<paper-menu-button slot="suffix" horizontal-offset="[[listboxOffsetWidth]]">
 					<iron-icon icon="paper-dropdown-menu:arrow-drop-down" slot="dropdown-trigger"></iron-icon>
@@ -211,7 +202,8 @@ class DynamicPopupMenu extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([
 			},
 			dataSource: {
 				type: Object,
-				value: null
+				value: null,
+				observer : '_dataSourceChanged'
 			},
 			width: {
 				type: Number,
@@ -230,6 +222,10 @@ class DynamicPopupMenu extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([
 			},
             traductValue:{
 			    type: String
+			},
+			displayAllAlways:{
+				type : Boolean,
+				value : false
 			}
 		};
 	}
@@ -309,6 +305,7 @@ class DynamicPopupMenu extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([
 	}
 
 	_filterChanged(e) {
+		if(this.displayAllAlways)return;
 		const text = e.detail.value;
 
 		this.dataSource && this.dataSource.filter(text)
@@ -326,6 +323,18 @@ class DynamicPopupMenu extends Polymer.TkLocalizerMixin(Polymer.mixinBehaviors([
 
 	_label(label) {
 		return this.localize(label,label,this.language) || "\u00a0";
+	}
+
+	_dataSourceChanged(){
+		if(this.dataSource && this.displayAllAlways){
+			this.dataSource && this.dataSource.filter(" ")
+			.then(items =>
+					this.value ? this.dataSource.get(this.value).then(res => res && !items.some(it=>it.id === res.id) ? [res].concat(items) : items) : items
+			)
+			.then(items =>
+					this.set('items', items)
+			);
+		}
 	}
 }
 customElements.define(DynamicPopupMenu.is, DynamicPopupMenu);

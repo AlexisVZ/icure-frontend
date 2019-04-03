@@ -1656,6 +1656,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 display: block;
             }
 
+            #busySpinner {
+                position: absolute;
+                height: 100%;
+                width: 100%;
+                background: rgba(255,255,255,.6);
+                z-index:110;
+                margin-top:0;
+                top:0;
+                left:0;
+            }
+            #busySpinnerContainer {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translateX(-50%) translateY(-50%);
+                width:100px;
+                height:100px;
+            }
+
         </style>
 
         <div class$="[[wideClass(user.rev)]]">
@@ -2490,6 +2509,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 <paper-button class="modal-button modal-button--save" autofocus on-tap="_saveLinkingLetter"><iron-icon icon="icons:save" class="mr5 smallIcon" ></iron-icon> [[localize('saveToPatFile','Save to patient file',language)]]</paper-button>
             </div>
         </paper-dialog>
+        <template is="dom-if" if="[[busySpinner]]"><div id="busySpinner"><div id="busySpinnerContainer"><ht-spinner class="spinner" active></ht-spinner></div></div></template>
 
     </template>
     <script>
@@ -3002,7 +3022,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             writeLinkingLetter(e) {
-                this.busySpinner = true;
+                this.set('busySpinner',true)
 
                 this.$['prose-editor-dialog-linking-letter'].open()
                 const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
@@ -3031,7 +3051,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         .finally(()=> {
                             ctcDetailPanel._refreshContextLinkingLetter();
                             ctcDetailPanel._toggleAddActions();
-                            this.busySpinner = false;
+                            this.set('busySpinner',false)
                         })
                 }
             }

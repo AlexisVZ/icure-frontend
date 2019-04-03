@@ -3013,32 +3013,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 const secondCol = this.root.querySelector('.second-panel') || {offsetWidth:0}
                 const thirdCol = this.root.querySelector('#ctcDetailPanel') || {offsetWidth:0}
 
-                const windowW = window.innerWidth
+                const toastdetector = secondCol.querySelector('.toast-detector')
+                const toast = this.root.querySelector('#selectionToast')
 
-                const firstW = firstCol.offsetWidth != 0 ? (firstCol.offsetWidth / windowW)*100+'vw' : 'auto'
-                const secondW = secondCol.offsetWidth != 0 ? (secondCol.offsetWidth / windowW)*100+'vw' : 'auto'
-                const thirdW = thirdCol.offsetWidth != 0 ? (thirdCol.offsetWidth / windowW)*100+'vw' : 'auto'
+                const windowW = window && window.innerWidth || null
+                const firstW = windowW && firstCol.offsetWidth != 0 ? (firstCol.offsetWidth / windowW)*100+'vw' : 'auto'
+                const secondW = windowW && secondCol.offsetWidth != 0 ? (secondCol.offsetWidth / windowW)*100+'vw' : 'auto'
+                const thirdW = windowW && thirdCol.offsetWidth != 0 ? (thirdCol.offsetWidth / windowW)*100+'vw' : 'auto'
+
                 localStorage.setItem('three-cols-size',JSON.stringify({'first':firstW,'second':secondW,'third':thirdW}))
 
                 if (secondCol.offsetWidth != 0) {
-                    const toastdetector = secondCol.querySelector('.toast-detector')
-                    const fitbottom = secondCol.querySelector('.fit-bottom')
-                    if (fitbottom) fitbottom.style.width = secondW
                     if (toastdetector) toastdetector.style.width = secondW
+                    if (toast) toast.style.width = secondW
                 }
             }
 
             _setColsWidth() {
-                const colSizes = localStorage.getItem('three-cols-size') ? JSON.parse(localStorage.getItem('three-cols-size')) : undefined
-                if (colSizes) {
+                if (localStorage.getItem('three-cols-size')) {
+                    const colSizes = JSON.parse(localStorage.getItem('three-cols-size'))
                     const firstCol = this.root.querySelector('.first-panel')
                     const secondCol = this.root.querySelector('.second-panel')
                     const thirdCol = this.root.querySelector('#ctcDetailPanel')
+
+                    const toastdetector = secondCol.querySelector('.toast-detector')
                     const toast = this.root.querySelector('#selectionToast')
+
                     if (thirdCol) thirdCol.style.width = colSizes['third'] || 'auto'
                     if (secondCol) {
                         secondCol.style.width = colSizes['second'] || 'auto'
-                        const toastdetector = secondCol.querySelector('.toast-detector')
                         if (toastdetector) toastdetector.style.width = colSizes['second'] || 'auto'
                         if (toast) toast.style.width = colSizes['second'] || 'auto'
                     }

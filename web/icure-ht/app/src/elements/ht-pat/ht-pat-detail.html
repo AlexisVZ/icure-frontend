@@ -3009,18 +3009,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             _colSizeChanged() {
-                const colSizes = localStorage.getItem('three-cols-size') ? JSON.parse(localStorage.getItem('three-cols-size')) : null
-
                 const firstCol = this.root.querySelector('.first-panel') || {offsetWidth:0}
                 const secondCol = this.root.querySelector('.second-panel') || {offsetWidth:0}
                 const thirdCol = this.root.querySelector('#ctcDetailPanel') || {offsetWidth:0}
 
-                const firstW = firstCol.offsetWidth != 0 ? (firstCol.offsetWidth >= 288 ? firstCol.offsetWidth+'px' : '288px') : (colSizes && colSizes['first'] ? colSizes['first'] : 'auto')
-                const secondW = secondCol.offsetWidth != 0 ? (secondCol.offsetWidth >= 280 ? secondCol.offsetWidth+'px' : '280px') : (colSizes && colSizes['second'] ? colSizes['second'] : 'auto')
-                const thirdW = thirdCol.offsetWidth != 0 ? (thirdCol.offsetWidth >= 304 ? thirdCol.offsetWidth+'px' : '304px') : (colSizes && colSizes['third'] ? colSizes['third'] : 'auto')
+                const windowW = window.innerWidth
 
+                const firstW = firstCol.offsetWidth != 0 ? (firstCol.offsetWidth / windowW)*100+'vw' : 'auto'
+                const secondW = secondCol.offsetWidth != 0 ? (secondCol.offsetWidth / windowW)*100+'vw' : 'auto'
+                const thirdW = thirdCol.offsetWidth != 0 ? (thirdCol.offsetWidth / windowW)*100+'vw' : 'auto'
                 localStorage.setItem('three-cols-size',JSON.stringify({'first':firstW,'second':secondW,'third':thirdW}))
-                if (secondCol) {
+
+                if (secondCol.offsetWidth != 0) {
                     const toastdetector = secondCol.querySelector('.toast-detector')
                     const fitbottom = secondCol.querySelector('.fit-bottom')
                     if (fitbottom) fitbottom.style.width = secondW
@@ -3039,12 +3039,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     if (secondCol) {
                         secondCol.style.width = colSizes['second'] || 'auto'
                         const toastdetector = secondCol.querySelector('.toast-detector')
-                        const fitbottom = secondCol.querySelector('.fit-bottom')
-                        if (fitbottom) fitbottom.style.width = colSizes['second'] || 'auto'
                         if (toastdetector) toastdetector.style.width = colSizes['second'] || 'auto'
+                        if (toast) toast.style.width = colSizes['second'] || 'auto'
                     }
                     if (firstCol) firstCol.style.width = colSizes['first'] || 'auto'
-                    if (toast) toast.style.width = colSizes['second'] || 'auto'
                 }
             }
 

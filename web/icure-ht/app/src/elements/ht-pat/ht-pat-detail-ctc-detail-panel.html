@@ -1707,14 +1707,14 @@
                 })
             }
 
-            _refreshContextLinkingLetter(e,eventDetails) {
+            _refreshContextLinkingLetter(e,eventDetails,prose) {
 
 			    if(!_.size(this.linkingLetterDataProvider)) this._getLinkingLetterDataProvider();
 
                 // Something is really wrong here...
                 if(!this.linkingLetterDataProvider && !_.size(this.linkingLetterDataProvider)) return
 
-                const prose = this.root.querySelector("#prose-editor-linking-letter")
+                // const prose = this.root.querySelector("#prose-editor-linking-letter")
                 prose.applyContext((expr, template, ctx, cache) => {
                     return new Promise(function (resolve, reject) {
                         try {
@@ -3321,14 +3321,14 @@
                 }).then(createDocTemplate =>this.api.doctemplate().setAttachment(createDocTemplate.id, templateContent))
             }
 
-            _printLinkingLetter(e) {
+            _printLinkingLetter(e,proseEditor) {
 
 			    // ONLY meant to create the doc template we'll be using
 			    // this._createLinkingLettersProseTemplate(); return;
 
 			    this.busySpinner = true;
 
-                const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
+                // const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
                 const proseHtmlContent = proseEditor.$.container.innerHTML;
 
                 this.api.pdfReport(this._getProsePdfHeader(this._getLinkingLetterCssStyles()) + this.api.rewriteTableColumnsWidth(proseHtmlContent) + this._getPdfFooter() )
@@ -3347,11 +3347,11 @@
 
             }
 
-            _saveLinkingLetter(e) {
+            _saveLinkingLetter(e,proseEditor) {
 
 			    this.busySpinner = true;
 
-                const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
+                // const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
                 const proseHtmlContent = proseEditor.$.container.innerHTML;
                 const resourcesObject = {
                     fileName: _.kebabCase(_.compact([

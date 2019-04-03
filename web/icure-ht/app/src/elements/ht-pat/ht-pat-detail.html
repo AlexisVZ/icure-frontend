@@ -3035,17 +3035,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         })
                 }
             }
-            _saveLinkingLetter() {
+            _saveLinkingLetter(e) {
                 const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
-                ctcDetailPanel._saveLinkingLetter()
+                const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
+                ctcDetailPanel._saveLinkingLetter(e,proseEditor)
             }
-            _printLinkingLetter() {
+            _printLinkingLetter(e) {
                 const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
-                ctcDetailPanel._printLinkingLetter()
+                const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
+                ctcDetailPanel._printLinkingLetter(e,proseEditor)
             }
-            _refreshContextLinkingLetter() {
+            _refreshContextLinkingLetter(e,eventDetails) {
                 const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
-                ctcDetailPanel._refreshContextLinkingLetter()
+                const prose = this.root.querySelector("#prose-editor-linking-letter")
+                ctcDetailPanel._refreshContextLinkingLetter(e,eventDetails,prose)
             }
 
             _colSizeChanged() {

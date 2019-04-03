@@ -1035,7 +1035,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
                 .container .fit-bottom{
                     left:0%!important;
-                    width:40%;
+                    /*width:40%;*/
                 }
                 .container.expanded{
                     /*grid-template-columns: 20% 30% 50%;*/
@@ -1077,28 +1077,54 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             }
             @media screen and (max-width:1625px){
-                .wide .container{
-                    grid-template-columns: 0% 25% 75%;
+                /*.wide .container{*/
+                    /*grid-template-columns: 0% 25% 75%;*/
+                /*}*/
+                .wide .first-panel {
+                    min-width: 0 !important;
+                    max-width: 0 !important;
+                    width: 0 !important;
                 }
-                .wide .container .fit-bottom{
-                    left:0%!important;
-                    width:40%;
+                .wide .second-panel {
+                    width: 25vw;
                 }
-                .wide .container.expanded{
+                .wide #ctcDetailPanel {
+                    width: 75vw;
+                }
+                /*.wide .container .fit-bottom {*/
+                    /*left: 0% !important;*/
+                    /*width: 40%;*/
+                /*}*/
+                /*.wide .fit-bottom{*/
+                    /*position: fixed;*/
+                    /*left:0!important;*/
+                    /*width: 25vw !important;*/
+                /*}*/
+                /*.wide .container.expanded{*/
                     /*grid-template-columns: 20% 30% 50%;*/
+                /*}*/
+                .wide .container.expanded .first-panel {
+                    min-width: 20vw !important;
+                    max-width: 20vw !important;
+                    width: 20vw !important;
                 }
-                .wide .container .first-panel {
+                .wide .container.expanded .second-panel {
+                    width: 30vw;
+                }
+                .wide .container.expanded #ctcDetailPanel {
+                    width: 50vw;
+                }
+                .wide .container.container .first-panel {
                     transform: translateX(-100%);
                 }
                 .wide .container.expanded .first-panel {
-                    width: 400px;
                     z-index: 1001;
                     transform: none;
                 }
-                .wide .container.expanded .fit-bottom {
+                /*.wide .container.expanded .fit-bottom {*/
                     /*left:20%!important;*/
-                    width:30%;
-                }
+                    /*width:30%;*/
+                /*}*/
                 .wide .selection-toast-button{
                     @apply --paper-font-caption;
                     text-transform:lowercase;
@@ -1109,6 +1135,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
                 .wide .display-left-menu{
                     display:inherit;
+                }
+                .wide .container.expanded .display-left-menu {
+                    left: 20vw;
                 }
                 /* WIP */
                 /*.display-left-menu.open iron-icon#icon {*/
@@ -1124,8 +1153,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             @media screen and (max-width:1218px) {
-                .wide .container {
-                    grid-template-columns: 0% 33% 67%;
+                /*.wide .container {*/
+                    /*grid-template-columns: 0% 33% 67%;*/
+                /*}*/
+                .wide .first-panel {
+                    min-width: 0 !important;
+                    max-width: 0 !important;
+                    width: 0 !important;
+                }
+                .wide .second-panel {
+                    width: 33vw;
+                }
+                .wide #ctcDetailPanel {
+                    width: 67vw;
                 }
             }
 

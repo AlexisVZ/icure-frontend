@@ -2479,7 +2479,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
-        <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-outside-click no-cancel-on-esc-key>
+        <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-esc-key>
             <h2 class="modal-title">[[localize('linkingLetter','Lettre de liaison',language)]]</h2>
             <prose-editor id="prose-editor-linking-letter" on-refresh-context="_refreshContextLinkingLetter"></prose-editor>
             <div class="buttons">
@@ -3911,6 +3911,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 this.root.querySelector('#cb_archhelb').opened = false
                 this.root.querySelector('#cb_ishelb').opened = false
                 this.root.querySelector('#cb_frhelb').opened = false
+                this.root.querySelector('#prose-editor-dialog-linking-letter').opened = false
 
                 this.root.querySelector('#medication-plan').reset()
 

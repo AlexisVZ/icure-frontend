@@ -833,6 +833,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             .todo-actions paper-icon-button {
+                display: block;
                 height: 24px;
                 width: 24px;
                 padding: 4px;
@@ -1394,10 +1395,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             .menu-item.iron-selected {
                 background:var(--app-primary-color);
                 color: white;
-            }
-
-            paper-item:hover .he-edit-btn {
-                display:inline-flex;
             }
 
             paper-item.iron-selected .he-edit-btn {
@@ -2029,11 +2026,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                         <paper-item id="_svc_[[e.id]]" class$="todo-item [[_lateEventCssClass(e)]]">
                                             <h4><label class="todo-due-date">[[_dateFormat(e.valueDate)]]</label>[[shortServiceDescription(e)]]</h4>
                                             <div class="todo-actions">
-                                                <paper-icon-button id="event-btn-edit_[[e.id]]" class="he-edit-btn" icon="create" on-tap="_toggleActionButton"></paper-icon-button>
+                                                <paper-icon-button id="event-btn-edit_[[e.id]]" class="he-edit-btn he-edit-btn-dark" icon="create" on-tap="_toggleActionButton"></paper-icon-button>
                                                 <paper-tooltip position="left" for="event-btn-edit_[[e.id]]">[[localize('edi','Edit',language)]]</paper-tooltip>
-                                                <paper-icon-button id="event-btn-close_[[e.id]]" class="he-edit-btn hideable" icon="done" on-tap="completeEvent"></paper-icon-button>
+                                                <paper-icon-button id="event-btn-close_[[e.id]]" class="he-edit-btn hideable he-edit-btn-dark" icon="done" on-tap="completeEvent"></paper-icon-button>
                                                 <paper-tooltip position="left" for="event-btn-close_[[e.id]]">[[localize('arc','Archive',language)]]</paper-tooltip>
-                                                <paper-icon-button id="event-btn-done_[[e.id]]" class="he-edit-btn hideable" icon="clear" on-tap="clearEvent"></paper-icon-button>
+                                                <paper-icon-button id="event-btn-done_[[e.id]]" class="he-edit-btn hideable he-edit-btn-dark" icon="clear" on-tap="clearEvent"></paper-icon-button>
                                                 <paper-tooltip position="left" for="event-btn-done_[[e.id]]">[[localize('mark_as_aborted','Marquer comme abandonnée',language)]]</paper-tooltip>
                                             </div>
                                         </paper-item>
@@ -2491,7 +2488,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
-        <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-esc-key>
+        <paper-dialog id="prose-editor-dialog-linking-letter" no-cancel-on-outside-click no-cancel-on-esc-key>
             <h2 class="modal-title">[[localize('linkingLetter','Lettre de liaison',language)]]</h2>
             <prose-editor id="prose-editor-linking-letter" on-refresh-context="_refreshContextLinkingLetter"></prose-editor>
             <div class="buttons">

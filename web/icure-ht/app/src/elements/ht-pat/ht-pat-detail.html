@@ -2516,6 +2516,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         import moment from 'moment/src/moment';
         import _ from 'lodash/lodash';
         import styx from '../../../scripts/styx';
+        import * as evaljs from "evaljs";
         import { AccessLogDto } from "icc-api/dist/icc-api/model/AccessLogDto";
 
         class HtPatDetail extends Polymer.TkLocalizerMixin(Polymer.Element) {
@@ -2870,6 +2871,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         type: Boolean,
                         value: false
                     },
+                    linkingLetterDataProvider :{
+                        type: Object
+                    },
                     linkingLetterDpData :{
                         type: Object,
                         value: {}
@@ -2885,7 +2889,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     globalHcp: {
                         type: Object,
                         value: null
-                    }
+                    },
+                    healthElements: {
+                        type: Array,
+                        value: function () {
+                            return [];
+                        }
+                    },
+                    contactsFormsAndDocuments: {
+                        type: Array,
+                        value: function () {
+                            return [];
+                        }
+                    },
                 };
             }
 
@@ -3022,53 +3038,489 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             writeLinkingLetter(e) {
+                this.set('currentContact',e.detail.currentContact)
+                this.set('contactsFormsAndDocuments',e.detail.contactsFormsAndDocuments)
+                this.set('servicesMap',e.detail.servicesMap)
+                this.set('globalHcp',e.detail.globalHcp)
+
                 this.set('busySpinner',true)
 
                 this.$['prose-editor-dialog-linking-letter'].open()
                 const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
                 proseEditor.set("additionalCssClasses", "linkingLetter" );
 
-                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+                this._getPdfPrintingCommonData({})
+                    .then(dpData=>_.assign({dpData:dpData}, {}))
+                    .then(resourceObject => {
 
-                if (ctcDetailPanel) {
-                    ctcDetailPanel._getPdfPrintingCommonData({})
-                        .then(dpData=>_.assign({dpData:dpData}, {}))
-                        .then(resourceObject => {
+                        this.linkingLetterDpData = resourceObject.dpData
+                        if (this.proseEditorLinkingLetterTemplateAlreadyApplied) return;
 
-                            this.linkingLetterDpData = resourceObject.dpData
-                            if (this.proseEditorLinkingLetterTemplateAlreadyApplied) return;
+                        return this.api.doctemplate().findDocumentTemplatesByDocumentType('template')
+                            .then(docTemplates =>_.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter." + this.language ), "[0]", false) || _.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter.fr" ), "[0]", {}))
+                            .then(dt =>{ return (dt && dt.id && dt.attachmentId) ? this.api.doctemplate().getAttachmentText(dt.id, dt.attachmentId).then(proseTemplate =>{
+                                this.proseEditorLinkingLetterTemplateAlreadyApplied = true;
+                                proseEditor.setJSONContent(this.api.crypto().utils.ua2utf8(proseTemplate)||{})
+                            }) : {} })
+                            .catch(e=>console.log(e))
 
-                            return this.api.doctemplate().findDocumentTemplatesByDocumentType('template')
-                                .then(docTemplates =>_.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter." + this.language ), "[0]", false) || _.get( _.filter(docTemplates,i=> _.get(i, "mainUti", "") === "proseTemplate.linkingLetter.fr" ), "[0]", {}))
-                                .then(dt =>{ return (dt && dt.id && dt.attachmentId) ? this.api.doctemplate().getAttachmentText(dt.id, dt.attachmentId).then(proseTemplate =>{
-                                    this.proseEditorLinkingLetterTemplateAlreadyApplied = true;
-                                    proseEditor.setJSONContent(this.api.crypto().utils.ua2utf8(proseTemplate)||{})
-                                }) : {} })
-                                .catch(e=>console.log(e))
+                    })
+                    .catch(e=>console.log(e))
+                    .finally(()=> {
+                        this._refreshContextLinkingLetter()
+                        this.set('busySpinner',false)
+                    })
+            }
 
-                        })
-                        .catch(e=>console.log(e))
-                        .finally(()=> {
-                            ctcDetailPanel._refreshContextLinkingLetter();
-                            ctcDetailPanel._toggleAddActions();
-                            this.set('busySpinner',false)
-                        })
+            _getLinkingLetterDataProvider() {
+
+                this.linkingLetterDataProvider = {
+
+                    getVariableValue: (value) => {
+                        return _.trim(
+                            value === "todaysDate" ? this.localize('day_' + parseInt(moment().day()), this.language) + ` ` + moment().format('DD') + ` `+ (this.localize('month_' + parseInt(moment().format('M')), this.language)).toLowerCase() + ` ` + moment().format('YYYY') :
+                            value === "senderHcpId" ? _.get(this.linkingLetterDpData, "hcpData.id", "") :
+                            value === "senderHcpFirstName" ? _.get(this.linkingLetterDpData, "hcpData.firstName", "") :
+                            value === "senderHcpLastName" ? _.get(this.linkingLetterDpData, "hcpData.lastName", "") :
+                            value === "senderHcpAddress" ? _.get(this.linkingLetterDpData, "hcpData.address.street", "") + " " +  _.get(this.linkingLetterDpData, "hcpData.address.houseNumber", "") + (_.trim(_.get(this.linkingLetterDpData, "hcpData.address.postboxNumber", "")) ? " / " + _.get(this.linkingLetterDpData, "hcpData.address.postboxNumber", "") : "") :
+                            value === "senderHcpZipCity" ? _.get(this.linkingLetterDpData, "hcpData.address.postalCode", "") + " " + _.get(this.linkingLetterDpData, "hcpData.address.city", "") :
+                            value === "senderHcpNihii" ? _.get(this.linkingLetterDpData, "hcpData.nihii", "") :
+                            value === "senderHcpTelOrMobile" ? _.trim( _.get( _.filter(_.get(this.linkingLetterDpData, "hcpData.address.telecoms", {}), {telecomType:"phone"}), "[0].telecomNumber", "" ) ) || _.trim( _.get( _.filter(_.get(this.linkingLetterDpData, "hcpData.address.telecoms", {}), {telecomType:"mobile"}), "[0].telecomNumber", "" ) ) :
+                            value === "senderHcpEmail" ? _.trim(_.get(_.filter(_.get(this.linkingLetterDpData, "hcpData.address.telecoms", {}), {telecomType:"email"}), "[0].telecomNumber", "-")) :
+                            value === "patientFirstName" ? _.get(this.linkingLetterDpData, "patientData.firstName", "") :
+                            value === "patientLastName" ? _.get(this.linkingLetterDpData, "patientData.lastName", "") :
+                            value === "patientAddress" ? _.trim( _.compact([
+                                _.get(this.linkingLetterDpData, "patientData.addressData.street", "") + " ",
+                                _.get(this.linkingLetterDpData, "patientData.addressData.houseNumber", "") + ( _.trim(_.get(this.linkingLetterDpData, "patientData.addressData.postboxNumber", "")) ? "/" + _.trim(_.get(this.linkingLetterDpData, "patientData.addressData.postboxNumber", "")) : "" ),
+                                " - " + _.get(this.linkingLetterDpData, "patientData.addressData.postalCode", "") + " ",
+                                _.get(this.linkingLetterDpData, "patientData.addressData.city", "") + " ",
+                            ]).join(" ")) :
+                            value === "patientNiss" ? _.get(this.linkingLetterDpData, "patientData.ssin", "") :
+                            value === "patientCt1Ct2" ? _.get(this.linkingLetterDpData, "patientData.insuranceData.parameters.tc1", "") + "/" + _.get(this.linkingLetterDpData, "patientData.insuranceData.parameters.tc2", "") :
+                            value === "patientInsMembershipNumber" ? _.get(this.linkingLetterDpData, "patientData.insuranceData.identificationNumber", "") :
+                            value === "patientInsCodeAndName" ? _.get(this.linkingLetterDpData, "patientData.insuranceData.code", "") + " - " + _.get(this.linkingLetterDpData, "patientData.insuranceData.name", "") :
+                            value === "patientSex" ? _.get(this.linkingLetterDpData, "patientData.gender", "") :
+                            value === "patientBirthDate" ? _.get(this.linkingLetterDpData, "patientData.birthDate", "") :
+                            ""
+                        )
+                    },
+
+                    getLocalizedText: (value) => {
+                        return this.localize(_.trim(value), "", this.language)
+                    }
+
                 }
+
             }
             _saveLinkingLetter(e) {
-                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+
+                this.busySpinner = true;
+
                 const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
-                ctcDetailPanel._saveLinkingLetter(e,proseEditor)
+                const proseHtmlContent = proseEditor.$.container.innerHTML;
+                const resourcesObject = {
+                    fileName: _.kebabCase(_.compact([
+                        this.localize("linkingLetter", this.language),
+                        this.linkingLetterDataProvider.getVariableValue("patientFirstName"),
+                        this.linkingLetterDataProvider.getVariableValue("patientLastName"),
+                        +new Date()
+                    ]).join(" ")) + ".pdf",
+                    documentMetas : {
+                        title : this.localize("linkingLetter", this.language),
+                        contactId : _.trim(_.get(this, "currentContact.id", "")),
+                        created: ""+ +new Date(),
+                        patientId : _.trim(_.get(this.patient, "id", "")),
+                        hcpId: _.trim(this.linkingLetterDataProvider.getVariableValue("senderHcpId")),
+                        patientName : _.compact([ this.linkingLetterDataProvider.getVariableValue("patientFirstName"), this.linkingLetterDataProvider.getVariableValue("patientLastName") ]).join(" ")
+                    }
+                }
+
+                this.api.pdfReport(this._getProsePdfHeader(this._getLinkingLetterCssStyles()) + this.api.rewriteTableColumnsWidth(proseHtmlContent) + this._getPdfFooter() )
+                    .then(({pdf:pdfFileContent, printed:printed}) => !printed && _.assign({pdfFileContent:pdfFileContent},resourcesObject) )
+                    .then(resourcesObject => this.api.message().newInstanceWithPatient(this.user, this.patient)
+                        .then(newMessageInstance=>_.assign({newMessageInstance: newMessageInstance}, resourcesObject))
+                        .then(resourcesObject=>this.api.message().createMessage(
+                            _.merge(
+                                resourcesObject.newMessageInstance,
+                                {
+                                    transportGuid: "LINKING-LETTER:PATIENT:ARCHIVE",
+                                    recipients: [_.get(this.user, 'healthcarePartyId', _.trim(this.user.id))],
+                                    metas: resourcesObject.documentMetas,
+                                    toAddresses: [_.get(this.user, 'email', _.get(this.user, 'healthcarePartyId', _.trim(this.user.id)))],
+                                    subject: resourcesObject.documentMetas.title
+                                }
+                            )
+                        ).then(createMessageResponse=>_.assign({createMessageResponse: createMessageResponse}, resourcesObject)))
+                    )
+                    .then(resourcesObject=>this.api.document().newInstance(
+                        this.user,
+                        resourcesObject.createMessageResponse,
+                        {
+                            documentType: 'report',
+                            mainUti: this.api.document().uti("application/pdf"),
+                            name: resourcesObject.documentMetas.title + " - " + resourcesObject.documentMetas.patientName
+                        }
+                        ).then(newDocumentInstance=>_.assign({newDocumentInstance:newDocumentInstance},resourcesObject))
+                    )
+                    .then(resourcesObject=>this.api.document().createDocument(resourcesObject.newDocumentInstance).then(createDocumentResponse=>_.assign({createDocumentResponse:createDocumentResponse},resourcesObject)))
+                    .then(resourcesObject=>this.api.encryptDecryptFileContentByUserHcpIdAndDocumentObject("encrypt", this.user, resourcesObject.createDocumentResponse, resourcesObject.pdfFileContent).then(encryptedFileContent=>_.assign({encryptedFileContent:encryptedFileContent},resourcesObject)))
+                    .then(resourcesObject=>this.api.document().setAttachment(resourcesObject.createDocumentResponse.id, null, resourcesObject.encryptedFileContent).then(setAttachmentResponse=>_.assign({setAttachmentResponse:setAttachmentResponse},resourcesObject)))
+                    .then(resourcesObject=>{
+                        this._saveDocumentAsService({
+                            documentId: _.trim(_.get(resourcesObject, "createDocumentResponse.id", "")),
+                            stringValue: resourcesObject.documentMetas.title,
+                            formId: "",
+                            contactId: _.trim(_.get(this, "currentContact.id", ""))
+                        })
+                        return resourcesObject
+                    })
+                    .catch(e=>{console.log(e)})
+                    .finally(()=>{ this.$['prose-editor-dialog-linking-letter'].close(); this.busySpinner=false; })
+
+            }
+            _saveDocumentAsService(inputConfig) {
+
+                const svc = this.api.contact().service().newInstance(
+                    this.user,
+                    {
+                        content: _.fromPairs([[this.language, { documentId: inputConfig.documentId, stringValue: inputConfig.stringValue }]]),
+                        label: 'document',
+                        formId: inputConfig.formId,
+                        contactId: inputConfig.contactId
+                    }
+                )
+
+                let newServiceData = {
+                    ctc: this.currentContact,
+                    svc: svc,
+                    scs: this.currentContact.subContacts.filter(sc => sc.formId === inputConfig.formId)
+                }
+
+                if( Array.isArray(_.get(newServiceData, "scs.services", false)) ) {
+                    newServiceData.scs.services.push({ serviceId: svc.id });
+                } else {
+                    newServiceData.scs["services"] = [{ serviceId: svc.id }];
+                }
+
+                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+
+                ctcDetailPanel._newService({},newServiceData)
+
+                this.currentContact.services.push(svc);
+
+                ctcDetailPanel.saveCurrentContact().then(() => ctcDetailPanel._contactsChanged());
+
             }
             _printLinkingLetter(e) {
-                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+
+                // ONLY meant to create the doc template we'll be using
+                // this._createLinkingLettersProseTemplate(); return;
+
+                this.busySpinner = true;
+
                 const proseEditor = this.root.querySelector("#prose-editor-linking-letter")
-                ctcDetailPanel._printLinkingLetter(e,proseEditor)
+                const proseHtmlContent = proseEditor.$.container.innerHTML;
+
+                this.api.pdfReport(this._getProsePdfHeader(this._getLinkingLetterCssStyles()) + this.api.rewriteTableColumnsWidth(proseHtmlContent) + this._getPdfFooter() )
+                    .then(({pdf:pdfFileContent, printed:printed}) => !printed && this.api.triggerFileDownload(
+                        pdfFileContent,
+                        "application/pdf",
+                        _.kebabCase(_.compact([
+                            this.localize("linkingLetter",this.language),
+                            this.linkingLetterDataProvider.getVariableValue("patientFirstName"),
+                            this.linkingLetterDataProvider.getVariableValue("patientLastName"),
+                            +new Date()
+                        ]).join(" ")) + ".pdf"
+                    ))
+                    .catch((e) =>{console.log(e)})
+                    .finally(()=>{this.busySpinner = false})
+
             }
             _refreshContextLinkingLetter(e,eventDetails) {
-                const ctcDetailPanel = this.root.querySelector('#ctcDetailPanel')
+
+                if(!_.size(this.linkingLetterDataProvider)) this._getLinkingLetterDataProvider();
+
+                // Something is really wrong here...
+                if(!this.linkingLetterDataProvider && !_.size(this.linkingLetterDataProvider)) return
+
                 const prose = this.root.querySelector("#prose-editor-linking-letter")
-                ctcDetailPanel._refreshContextLinkingLetter(e,eventDetails,prose)
+                console.log({
+                    patient:this.patient,
+                    contacts:this.contacts,
+                    healthElements:this.healthElements,
+                    subContact:this.currentContact.subContacts,
+                    form:this.contactsFormsAndDocuments,
+                    servicesMap:this.servicesMap,
+                    user:this.user,
+                    hcp:this.user.healthcarePartyId,
+                    language: this.language,
+                    dataProvider: this.linkingLetterDataProvider||{}
+                })
+                prose.applyContext((expr, template, ctx, cache) => {
+                    return new Promise(function (resolve, reject) {
+                        try {
+                            const env = new evaljs.Environment(_.assign(ctx, {resolve, reject}));
+
+                            const gen = (env.gen(expr)())
+                            let status = {done: false}
+                            while (!status.done) {
+                                status = gen.next() //Execute lines one by one
+                            }
+
+                            if (status.value && status.value.asynchronous) {
+                                //Wait for internal resolution
+                            } else {
+                                resolve({ctx:status.value})
+                            }
+                        } catch (e) {
+                            reject(e)
+                        }
+                    })
+                }, {
+                    patient:this.patient,
+                    contacts:this.contacts,
+                    healthElements:this.healthElements,
+                    subContact:this.currentContact.subContacts,
+                    form:this.contactsFormsAndDocuments,
+                    servicesMap:this.servicesMap,
+                    user:this.user,
+                    hcp:this.user.healthcarePartyId,
+                    language: this.language,
+                    dataProvider: this.linkingLetterDataProvider||{}
+                })
+            }
+            _getPdfPrintingCommonData( inputData ) {
+
+                let pdfPrintingData = {
+                    patientData : {
+                        id: _.trim( _.get(this.patient, "id", "") ),
+                        lastName: _.get(this.patient, "lastName", ""),
+                        firstName: _.get(this.patient, "firstName", ""),
+                        addressData:
+                            _.chain(_.get(this.patient, "addresses", {})).filter({addressType:"home"}).head().value() ||
+                            _.chain(_.get(this.patient, "addresses", {})).filter({addressType:"work"}).head().value() ||
+                            _.chain(_.get(this.patient, "addresses", {})).head().value() ||
+                            {},
+                        ssin: this.api.formatSsinNumber(_.get(this.patient, "ssin", "")),
+                        insuranceData: _
+                            .chain(_.get(this.patient, "insurabilities",{}))
+                            .filter((i)=>{
+                                return i &&
+                                    !!moment( _.trim(_.get(i, "startDate", "0") ), "YYYYMMDD" ).isBefore(moment()) &&
+                                    (!!moment( _.trim(_.get(i, "endDate", "0") ), "YYYYMMDD" ).isAfter(moment()) || !_.trim(_.get(i, "endDate", "") ) ) &&
+                                    !!_.trim( _.get( i, "insuranceId", "" ) ) &&
+                                    !!_.trim( _.get( i, "identificationNumber", "" ) )
+                            })
+                            .head()
+                            .value(),
+                        gender: this.localize(_.trim(_.get(this.patient, "gender", "male")) + "GenderLong",this.language),
+                        birthDate: parseInt(_.get(this.patient, "dateOfBirth", 0)) ? moment(_.trim(_.get(this.patient, "dateOfBirth")),"YYYYMMDD").format("DD/MM/YYYY") : "-"
+                    },
+                    hcpData: {
+                        id: _.trim( _.get(this.globalHcp, "id", "") ),
+                        address:
+                            _.chain(_.get(this.globalHcp,"addresses",{})).filter({addressType:"work"}).head().value() ||
+                            _.chain(_.get(this.globalHcp,"addresses",{})).filter({addressType:"home"}).head().value() ||
+                            _.chain(_.get(this.globalHcp,"addresses",{})).head().value() ||
+                            {},
+                        lastName: _.trim( _.get(this.globalHcp, "lastName", "") ).toUpperCase(),
+                        firstName: _.trim( _.get(this.globalHcp, "firstName", "") ),
+                        nihii: this.api.formatInamiNumber(_.trim(_.get(this.globalHcp, "nihii", ""))),
+                        telecoms: _.assign(
+                            {},
+                            _.filter(
+                                _
+                                    .chain(
+                                        _.chain(_.get(this.globalHcp,"addresses",{})).filter({addressType:"work"}).head().value() ||
+                                        _.chain(_.get(this.globalHcp,"addresses",{})).filter({addressType:"home"}).head().value() ||
+                                        _.chain(_.get(this.globalHcp,"addresses",{})).head().value() ||
+                                        {}
+                                    )
+                                    .get( "telecoms", [] )
+                                    .value(),
+                                (telecom) => {return {type:_.get(telecom, "telecomType", ""), value:_.get(telecom, "telecomNumber", "")}}
+                            )
+                        )
+                    }
+                }
+
+                return new Promise((resolve) => {
+
+                    return Promise.all(_.map(_.get(inputData, "codesToFind", []),(i)=>this.api.code().findCodes("be", i)))
+                        .then(codesResults => {
+                            pdfPrintingData.foundCodes = _.get(pdfPrintingData,"foundCodes",[]);
+                            _.map(codesResults, (nthPromiseResults, k) => {
+                                pdfPrintingData.foundCodes.push({ code: _.get(inputData, "codesToFind["+k+"]", false), values: nthPromiseResults })
+                            });
+                        })
+                        .catch(e => { console.log("CATCH"); console.log(e) })
+                        .finally(() => {
+                            pdfPrintingData = _.assign( inputData, pdfPrintingData )
+                            return new Promise((resolve) => {
+                                return new Promise((resolve) => {
+                                    return this.api.insurance().getInsurance(_.get(pdfPrintingData, "patientData.insuranceData.insuranceId", ""))
+                                        .then(singleInsuranceData => {
+                                            pdfPrintingData.patientData.insuranceData = _.assign(
+                                                {
+                                                    code:_.get(singleInsuranceData, "code", "<NA>"),
+                                                    name:_.get(singleInsuranceData, "name." + this.language, "") || _.trim( _.head( _.filter(_.get(singleInsuranceData, "name", "" ), _.trim) ) ) || "<NA>"
+                                                },
+                                                pdfPrintingData.patientData.insuranceData
+                                            )
+                                            return resolve({})
+                                        })
+                                        .catch((e)=>{ return resolve({}); });
+                                })
+                                    .then(()=>resolve(_.assign( inputData, pdfPrintingData )))
+                                    .catch(()=>resolve(_.assign( inputData, pdfPrintingData )));
+                            })
+                        }).then(()=>resolve(pdfPrintingData))
+                })
+
+            }
+            _getLinkingLetterCssStyles() {
+                return `
+                    .linkingLetter h1 { margin-bottom:5px }
+                    .linkingLetter h5 { margin-top:0px; text-decoration:none; font-weight:400 }
+                    .linkingLetter p { padding:0; margin:10px 0 10px 0; }
+                    .linkingLetter .tableWrapper { margin:-10px 0 0 0!important; }
+                    .linkingLetter table { border:0; border-collapse: collapse; }
+                    .linkingLetter table tr td { border:1px solid #000; font-size:13px; padding-top:0; padding-bottom:0 }
+                    .linkingLetter table tr td p { padding:0; margin:10px 0 10px 0; }
+                    .linkingLetter p:last-child { margin-top:-10px!important; }
+                    .linkingLetter table tr td p:last-child { margin-top:10px!important; }
+			    `
+            }
+            _getProsePdfHeader( additionalCssStyles = "" ) {
+
+                return `<html>
+                                    <head>
+                                        <style>
+
+                                            body {margin: 0;}
+                                            @page {size: A4; margin: 0; }
+
+                                            :host {
+                                                background:#ffffff;
+                                                height: 100%;
+                                                width: 100%;
+                                                font-family: 'Roboto', sans-serif;
+                                                font-size: 11px;
+                                                min-height: 100vw;
+
+                                            }
+
+                                            .container {
+                                                left: 50%;
+                                                transform: translateX(-50%);
+                                                position: absolute;
+                                            }
+
+                                            .page {
+                                                padding: 40px;
+                                                outline: 0;
+                                                background: #ffffff;
+                                                font-family: 'Roboto', sans-serif;
+                                                font-size: 14px;
+                                                line-height: 2em;
+                                                width: 210mm;
+                                                height: calc(297mm - 40px);
+                                                overflow:hidden;
+                                            }
+
+                                            h1 { font-size: 1.8em; font-weight: bold; }
+                                            h2 { font-size: 1.5em; font-weight: bold; }
+                                            h3 { font-size: 1.3em; font-weight: bold; }
+                                            h4 { font-size: 1em; font-weight: bold; text-decoration: underline; }
+                                            h5 { font-size: 1em; text-decoration: underline; }
+
+                                            .ProseMirror {
+                                                outline: 0;
+                                                position: relative;
+                                                word-wrap: break-word;
+                                                white-space: pre-wrap;
+                                                -webkit-font-variant-ligatures: none;
+                                                font-variant-ligatures: none;
+                                            }
+
+                                            .ProseMirror pre { white-space: pre-wrap; }
+                                            .ProseMirror li { position: relative; }
+                                            .ProseMirror .tableWrapper { overflow-x: auto; }
+
+                                            .ProseMirror table {
+                                                border-collapse: collapse;
+                                                table-layout: fixed;
+                                                width: 100%;
+                                                overflow: hidden;
+                                                margin: 0;
+                                                font-size: 11px;
+                                            }
+
+                                            .ProseMirror td, .ProseMirror th {
+                                                vertical-align: top;
+                                                box-sizing: border-box;
+                                                position: relative;
+                                                font-size: 11px;
+                                            }
+
+                                            /* Give selected cells a blue overlay */
+                                            .ProseMirror .selectedCell:after {
+                                                z-index: 2;
+                                                position: absolute;
+                                                content: "";
+                                                left: 0; right: 0; top: 0; bottom: 0;
+                                                background: rgba(200, 200, 255, 0.4);
+                                                pointer-events: none;
+                                            }
+
+                                            .ProseMirror th, .ProseMirror td {
+                                                min-width: 1em;
+                                                border: 1px solid #ddd;
+                                                padding: 3px 5px;
+                                                font-size: 11px;
+                                            }
+
+                                            .ProseMirror-hideselection *::selection { background: transparent; }
+                                            .ProseMirror-hideselection *::-moz-selection { background: transparent; }
+                                            .ProseMirror-hideselection { caret-color: transparent; }
+                                            .ProseMirror-selectednode { outline: 2px solid #8cf; }
+                                            li.ProseMirror-selectednode { outline: none; }
+
+                                            li.ProseMirror-selectednode:after {
+                                                content: "";
+                                                position: absolute;
+                                                left: -32px;
+                                                right: -2px;
+                                                top: -2px;
+                                                bottom: -2px;
+                                                border: 2px solid #8cf;
+                                                pointer-events: none;
+                                            }
+
+                                            .divider{
+                                                display: block;
+                                                border-left: 1px solid #e0e0e0;
+                                                height: 100%;
+                                                margin: 0 4px;
+                                                padding: 0;
+                                            }
+
+                                            .ProseMirror table { margin: 0; }
+                                            .ProseMirror th, .ProseMirror td {
+                                                min-width: 1em;
+                                                border: 1px solid #ddd;
+                                                padding: 15px 10px;
+                                            }
+                                            .ProseMirror .tableWrapper { margin: 1em 0; }
+
+                                            ` + _.trim(additionalCssStyles) + `
+
+                                        </style>
+                                        </head>
+                                        <body>`
+            }
+            _getPdfFooter() {
+                return "</body></html>";
             }
 
             _colSizeChanged() {

@@ -150,9 +150,31 @@
 				--ht-spinner-layer-4-color: var(--app-primary-color-dark);
 			}
 
-            #printSubForm {
-                --paper-fab: {background: var(--app-secondary-color);};
-            }
+			.buttons{
+				display: flex;
+				flex-flow: row wrap;
+				justify-content: flex-end;
+				align-items: center;
+				margin: 6px 6px 0;
+			}
+
+            .printSubForm {
+				--paper-icon-button-ink-color: var(--app-secondary-color-dark);
+				--paper-icon-button: {
+					background: var(--app-secondary-color);
+					color: var(--app-text-color);
+					box-shadow: var(--app-shadow-elevation-1);
+					border-radius: 50%;
+					height: 28px;
+					width: 28px;
+					box-sizing: border-box;
+					padding: 4px;
+				};
+				--paper-icon-button-hover: {
+					box-shadow: var(--app-shadow-elevation-2);
+					background: var(--app-secondary-color);
+				};
+			}
 
 			.tKLabelSeparator{
 				width: 100%;
@@ -298,10 +320,12 @@
                         </template>
                     </div>
                 </template>
-                -->
-                <template is="dom-if" if="[[_shouldDisplayPrintSubFormIcon(isSubForm, template)]]">
-                    <paper-fab-speed-dial-action icon="print" on-tap="printSubForm" id="printSubForm">[[localize('print','Print',language)]]</paper-fab-speed-dial-action>
-                </template>
+				-->
+				<div class="buttons">
+					<template is="dom-if" if="[[_shouldDisplayPrintSubFormIcon(isSubForm, template)]]">
+						<paper-icon-button id="printSubForm" class="printSubForm" icon="print" on-tap="printSubForm">[[localize('print','Print',language)]]</paper-icon-button>
+					</template>
+				</div>
             </template>
 		</paper-card>
 	</template>

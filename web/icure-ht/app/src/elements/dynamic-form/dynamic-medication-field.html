@@ -35,9 +35,21 @@
 			}
 
 			.subform-container{
-				border: 1px solid rgba(0,0,0,.1);
+				border: 1px solid var(--app-background-color-darker);
 				margin: 0 6px 12px;
 				padding: 6px;
+			}
+
+			label {
+				color: var(--app-text-color);
+				background: var(--app-background-color-dark);
+				font-size: var(--font-size-normal);
+				margin: 12px 0 0 6px;
+				padding: 2px 6px;
+				display: inline-block;
+				max-width: 256px;
+				text-align: center;
+				font-weight: 700;
 			}
 
 			dynamic-link {
@@ -134,17 +146,6 @@
 
 			iron-selector > * {
 				padding: 16px 16px;
-			}
-
-			label {
-				color: var(--app-primary-color);
-				background: rgba(0,0,0,.1);
-				font-size: 12px;
-				margin: 12px 0 0 6px;
-				padding: 2px 4px;
-				display: inline-block;
-				max-width: 256px;
-				text-align: center;
 			}
 
 			paper-dialog {
